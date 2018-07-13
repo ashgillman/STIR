@@ -1153,10 +1153,7 @@ template<typename TargetT>
 void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::compute_kernelised_image(
                          TargetT& kImage,
                          TargetT& Image,
-                         double sigma_m,
-                         int neighbours_num,
-                         const TargetT& current_estimate,
-                         bool only_2D)
+                         const TargetT& current_estimate)
 {
 
 
@@ -1302,10 +1299,7 @@ template<typename TargetT>
 void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::fast_compute_kernelised_image(
                          TargetT& kImage,
                          TargetT& Image,
-                         double sigma_m,
-                         int neighbours_num,
-                         const TargetT& current_estimate,
-                         bool only_2D)
+                         const TargetT& current_estimate)
 {
 
 
@@ -1434,16 +1428,11 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     TargetT& kImage= *current_estimate.get_empty_copy();
 
     if(this->num_non_zero_feat==1){
-        fast_compute_kernelised_image (kImage, *current_estimate.clone(), sigma_m,
-                                                                        neighbours_num,
-                                                                        current_estimate,
-                                                                        only_2D);
+        fast_compute_kernelised_image (kImage, *current_estimate.clone(), current_estimate);
                                     }
     else{
-      compute_kernelised_image(kImage, *current_estimate.clone(), sigma_m,
-                               neighbours_num,
-                               current_estimate,
-                               only_2D);
+      compute_kernelised_image(kImage, *current_estimate.clone(),
+                               current_estimate);
     }
 if((get_subiter_num ()-1)%this->get_num_subsets()==0){
 //        this->current_kimage_filename =
@@ -1475,16 +1464,12 @@ std::cout<<this->current_kimage_filename<<std::endl;
 
 
          if(this->num_non_zero_feat==1){
-             fast_compute_kernelised_image(ksens, *sens_sptr,  sigma_m,
-                                                              neighbours_num,
-                                                              current_estimate,
-                                                                    only_2D);
+             fast_compute_kernelised_image(ksens, *sens_sptr,
+                                                              current_estimate);
          }
          else{
-                 compute_kernelised_image(ksens, *sens_sptr, sigma_m,
-                                                                  neighbours_num,
-                                                                 current_estimate,
-                                                                        only_2D);
+                 compute_kernelised_image(ksens, *sens_sptr,
+                                                             current_estimate);
 
          }
 
@@ -1511,17 +1496,13 @@ std::cout<<this->current_kimage_filename<<std::endl;
 
   //write_to_file("gradient", gradient);
   if(this->num_non_zero_feat==1){
-      fast_compute_kernelised_image(gradient,*gradient.clone(),sigma_m,
-                                                                      neighbours_num,
-                                                                      current_estimate,
-                                                                      only_2D);
+      fast_compute_kernelised_image(gradient,*gradient.clone(),
+                                             current_estimate);
 
   }
   else{
-      compute_kernelised_image(gradient,*gradient.clone(),sigma_m,
-                                                                  neighbours_num,
-                                                                  current_estimate,
-                                                                  only_2D);
+      compute_kernelised_image(gradient,*gradient.clone(),
+                                                         current_estimate);
   }
 
 //write_to_file("kgradient", gradient);

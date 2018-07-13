@@ -448,17 +448,13 @@ protected:
 
 /*! Compute for each voxel, jl, of the PET image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
 /*! The information is stored in the image, kImage */
-  void compute_kernelised_image(TargetT &kImage, TargetT &Image, double sigma_m,
-                                                            int neighbours_num,
-                                                            const TargetT &current_estimate,
-                                                            bool only_2D);
+  void compute_kernelised_image(TargetT &kImage, TargetT &Image,
+                                                            const TargetT &current_estimate);
 
  /*! Similar to compute_kernelised_image() but this is the special case when the feature vectors contains only one non-zero element. */
  /*! The computation becomes faster because we do not need to create norm matrixes*/
-void fast_compute_kernelised_image(TargetT &kImage, TargetT &Image, double sigma_m,
-                                                          int neighbours_num,
-                                                          const TargetT &current_estimate,
-                                                          bool only_2D);
+void fast_compute_kernelised_image(TargetT &kImage, TargetT &Image,
+                                                          const TargetT &current_estimate);
 
 };
 

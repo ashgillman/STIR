@@ -56,7 +56,7 @@ output filename prefix := ${ksOUTPUT}
 
 
 number of subsets:= 21
-;in order to obtained the PET kernelised image we always need to run 1 more iteration (ex: if we want 210 sub-iterations we need to run 211)
+;in order to obtain the PET kernelised image we always need to run 1 more sub-iteration (ex: if we want 210 sub-iterations we need to run 211)
 number of subiterations:= 211
 save estimates at subiteration intervals:= 21
 
