@@ -9,10 +9,10 @@ input file := ${ksINPUT}
 ; Daniel: here we have the possibility to choose the parameters which define the kernel matrix and the name of the anatomical image.
 
 hybrid:=${hybrid}
-kernel_par:= ${kpar}
-PETkernel_par:=${kPpar}
-Nmdistance_par:=${Dmpar}
-Ndistance_par:=${Dpar}
+sigma_m:= ${kpar}
+sigma_p:=${kPpar}
+sigma_dm:=${Dmpar}
+sigma_dp:=${Dpar}
 neighbours_num:= ${N}
 anatomical1_image_filename:=${mr}
 num_non_zero_feat_elements:=${num_non_zero_feat_elements}
@@ -56,6 +56,7 @@ output filename prefix := ${ksOUTPUT}
 
 
 number of subsets:= 21
+;in order to obtained the PET kernelised image we always need to run 1 more iteration (ex: if we want 210 sub-iterations we need to run 211)
 number of subiterations:= 211
 save estimates at subiteration intervals:= 21
 

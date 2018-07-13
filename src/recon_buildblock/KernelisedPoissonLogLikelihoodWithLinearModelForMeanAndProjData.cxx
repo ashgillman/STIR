@@ -106,10 +106,10 @@ set_defaults()
   this->zero_seg0_end_planes = 0;
   this->neighbours_num=3;
 
-  this->kernel_par=1;
-  this->PETkernel_par=1;
-  this->Ndistance_par=1;
-  this->Nmdistance_par=1;
+  this->sigma_m=1;
+  this->sigma_p=1;
+  this->sigma_dp=1;
+  this->sigma_dm=1;
   this->anatomical1_image_filename="";
   this->only_2D = 0;
   this->kernelised_output_filename_prefix="";
@@ -183,10 +183,10 @@ initialise_keymap()
   this->parser.add_key("kernelised output filename prefix",&kernelised_output_filename_prefix);
   this->parser.add_key("neighbours_num",&this->neighbours_num);
   this->parser.add_key("num_non_zero_feat_elements",&this->num_non_zero_feat);
-  this->parser.add_key("kernel_par",&this->kernel_par);
-  this->parser.add_key("PETkernel_par",&this->PETkernel_par);
-  this->parser.add_key("Ndistance_par",&this->Ndistance_par);
-  this->parser.add_key("Nmdistance_par",&this->Nmdistance_par);
+  this->parser.add_key("sigma_m",&this->sigma_m);
+  this->parser.add_key("sigma_p",&this->sigma_p);
+  this->parser.add_key("sigma_dp",&this->sigma_dp);
+  this->parser.add_key("sigma_dm",&this->sigma_dm);
   this->parser.add_key("only_2D",&this->only_2D);
   this->parser.add_key("hybrid",&this->hybrid);
 
@@ -283,7 +283,8 @@ post_processing()
            % this->get_kSD ());
 
 
-       shared_ptr<TargetT> normp_sptr(this->anatomical1_sptr->get_empty_copy ());
+      if(num_non_zero_feat>1){
+      shared_ptr<TargetT> normp_sptr(this->anatomical1_sptr->get_empty_copy ());
 //       TargetT& normp = *this->get_anatomical1_sptr ().get()->get_empty_copy();
        shared_ptr<TargetT> normm_sptr(this->anatomical1_sptr->get_empty_copy ());
 
@@ -300,6 +301,7 @@ post_processing()
 
       this->set_kpnorm_sptr (normp_sptr);
       this->set_kmnorm_sptr (normm_sptr);
+      }
   }
   if (this->additive_projection_data_filename != "0")
   {
@@ -435,26 +437,26 @@ get_num_non_zero_feat() const
 template <typename TargetT>
 const double
 KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-get_kernel_par() const
-{ return this->kernel_par; }
+get_sigma_m() const
+{ return this->sigma_m; }
 
 template <typename TargetT>
 double
 KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-get_PETkernel_par()
-{ return this->PETkernel_par; }
+get_sigma_p()
+{ return this->sigma_p; }
 
 template <typename TargetT>
 double
 KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-get_Ndistance_par()
-{ return this->Ndistance_par; }
+get_sigma_dp()
+{ return this->sigma_dp; }
 
 template <typename TargetT>
 double
 KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-get_Nmdistance_par()
-{ return this->Nmdistance_par; }
+get_sigma_dm()
+{ return this->sigma_dm; }
 
 template <typename TargetT>
 const bool
@@ -492,9 +494,6 @@ template <typename TargetT>
 shared_ptr<TargetT> &KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_anatomical1_sptr()
 { return this->anatomical1_sptr; }
 
-template <typename TargetT >
-shared_ptr<TargetT> &KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_nkernel_sptr()
-{ return this->nkernel_sptr; }
 
 
 template <typename TargetT>
@@ -617,7 +616,6 @@ set_kmnorm_sptr (shared_ptr<TargetT> &arg)
   this->kmnorm_sptr = arg;
 }
 
-
 template<typename TargetT>
 void
 KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
@@ -625,16 +623,6 @@ set_anatomical1_sptr (shared_ptr<TargetT>& arg)
 {
   this->anatomical1_sptr = arg;
 }
-
-template<typename TargetT>
-void
-KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_nkernel_sptr (shared_ptr<TargetT> &arg)
-{
-  this->nkernel_sptr = arg;
-}
-
-
 
 template<typename TargetT>
 void
@@ -1165,7 +1153,7 @@ template<typename TargetT>
 void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::compute_kernelised_image(
                          TargetT& kImage,
                          TargetT& Image,
-                         double kernel_par,
+                         double sigma_m,
                          int neighbours_num,
                          const TargetT& current_estimate,
                          bool only_2D)
@@ -1280,8 +1268,8 @@ for (int x=min_x;x<= max_x;x++)
                                }
                                else{
 
-                               kPET=exp(-(*this->kpnorm_sptr)[0][l][m]/square(current_estimate[z][y][x]*get_PETkernel_par())/2)*
-                                    exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(get_Ndistance_par())));
+                               kPET=exp(-(*this->kpnorm_sptr)[0][l][m]/square(current_estimate[z][y][x]*get_sigma_p())/2)*
+                                    exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(get_sigma_dp())));
 }
 
                    }
@@ -1290,8 +1278,8 @@ for (int x=min_x;x<= max_x;x++)
 
                    }
 
-                   kAnatomical1=exp(-(*this->kmnorm_sptr)[0][l][m]/square(kSD*kernel_par)/2)*
-                                exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(Nmdistance_par)));
+                   kAnatomical1=exp(-(*this->kmnorm_sptr)[0][l][m]/square(kSD*sigma_m)/2)*
+                                exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(sigma_dm)));
 
                    kImage[z][y][x] += kAnatomical1*kPET*Image[z+dz][y+dy][x+dx];
 
@@ -1314,7 +1302,7 @@ template<typename TargetT>
 void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::fast_compute_kernelised_image(
                          TargetT& kImage,
                          TargetT& Image,
-                         double kernel_par,
+                         double sigma_m,
                          int neighbours_num,
                          const TargetT& current_estimate,
                          bool only_2D)
@@ -1362,7 +1350,7 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::f
              }
 
 // get anatomical1 standard deviation over all voxels
-     double kSD=0, pnkernel=0, kAnatomical1=0;
+     double kSD=0;
      kSD=get_kSD();
 
 // calculate kernelised image
@@ -1371,7 +1359,7 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::f
               const int max_z = (*anatomical1_sptr).get_max_index();
 
               for (int z=min_z; z<=max_z; z++)
-                {
+                { double pnkernel=0, kAnatomical1=0;
                   const int min_dz = max(distance.get_min_index(), min_z-z);
                   const int max_dz = min(distance.get_max_index(), max_z-z);
 
@@ -1404,8 +1392,8 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::f
                                         }
                                         else{
 
-                                        kPET=exp(-square((current_estimate[z][y][x]-current_estimate[z+dz][y+dy][x+dx])/current_estimate[z][y][x]*get_PETkernel_par())/2)*
-                                             exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(get_Ndistance_par())));
+                                        kPET=exp(-square((current_estimate[z][y][x]-current_estimate[z+dz][y+dy][x+dx])/current_estimate[z][y][x]*get_sigma_p())/2)*
+                                             exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(get_sigma_dp())));
                                         }
 
                             }
@@ -1413,8 +1401,8 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::f
                                 kPET=1;
 
                             }  // the following "pnkernel" is the normalisation of the kernel
-                                    kAnatomical1=exp(-square(((*anatomical1_sptr)[z][y][x]-(*anatomical1_sptr)[z+dz][y+dy][x+dx])/kSD*kernel_par)/2)*
-                                                 exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(Nmdistance_par)));
+                                    kAnatomical1=exp(-square(((*anatomical1_sptr)[z][y][x]-(*anatomical1_sptr)[z+dz][y+dy][x+dx])/kSD*sigma_m)/2)*
+                                                 exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(sigma_dm)));
 
                                     pnkernel+=kPET*kAnatomical1;
 
@@ -1446,13 +1434,13 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     TargetT& kImage= *current_estimate.get_empty_copy();
 
     if(this->num_non_zero_feat==1){
-        fast_compute_kernelised_image (kImage, *current_estimate.clone(), kernel_par,
+        fast_compute_kernelised_image (kImage, *current_estimate.clone(), sigma_m,
                                                                         neighbours_num,
                                                                         current_estimate,
                                                                         only_2D);
                                     }
     else{
-      compute_kernelised_image(kImage, *current_estimate.clone(), kernel_par,
+      compute_kernelised_image(kImage, *current_estimate.clone(), sigma_m,
                                neighbours_num,
                                current_estimate,
                                only_2D);
@@ -1487,13 +1475,13 @@ std::cout<<this->current_kimage_filename<<std::endl;
 
 
          if(this->num_non_zero_feat==1){
-             fast_compute_kernelised_image(ksens, *sens_sptr,  kernel_par,
+             fast_compute_kernelised_image(ksens, *sens_sptr,  sigma_m,
                                                               neighbours_num,
                                                               current_estimate,
                                                                     only_2D);
          }
          else{
-                 compute_kernelised_image(ksens, *sens_sptr, kernel_par,
+                 compute_kernelised_image(ksens, *sens_sptr, sigma_m,
                                                                   neighbours_num,
                                                                  current_estimate,
                                                                         only_2D);
@@ -1502,7 +1490,7 @@ std::cout<<this->current_kimage_filename<<std::endl;
 
 
         this->set_subset_sensitivity_sptr (shared_ptr< TargetT >(ksens.clone()),subset_num);
-                                              //      }
+
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
   distributable_compute_gradient1(this->projector_pair_ptr->get_forward_projector_sptr(),
@@ -1523,14 +1511,14 @@ std::cout<<this->current_kimage_filename<<std::endl;
 
   //write_to_file("gradient", gradient);
   if(this->num_non_zero_feat==1){
-      fast_compute_kernelised_image(gradient,*gradient.clone(),kernel_par,
+      fast_compute_kernelised_image(gradient,*gradient.clone(),sigma_m,
                                                                       neighbours_num,
                                                                       current_estimate,
                                                                       only_2D);
 
   }
   else{
-      compute_kernelised_image(gradient,*gradient.clone(),kernel_par,
+      compute_kernelised_image(gradient,*gradient.clone(),sigma_m,
                                                                   neighbours_num,
                                                                   current_estimate,
                                                                   only_2D);

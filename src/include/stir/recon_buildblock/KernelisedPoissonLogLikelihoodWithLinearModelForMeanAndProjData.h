@@ -110,10 +110,10 @@ class DistributedCachingInformation;
   input file :=
 
   hybrid:=1
-  kernel_par:= 1                             ;is the parameter $\f \sigma_{m} \f$;
-  PETkernel_par:=1                           ;is the parameter $\f \sigma_{p} \f$;
-  Nmdistance_par:=1                          ;is the parameter $\f \sigma_{dm} \f$;
-  Ndistance_par:=1                           ;is the parameter $\f \sigma_{dp} \f$;
+  sigma_m:= 1                             ;is the parameter $\f \sigma_{m} \f$;
+  sigma_p:=1                           ;is the parameter $\f \sigma_{p} \f$;
+  sigma_dm:=1                          ;is the parameter $\f \sigma_{dm} \f$;
+  sigma_dp:=1                           ;is the parameter $\f \sigma_{dp} \f$;
   neighbours_num:= 3                         ;is the cubic root of the number of voxels in the neighbourhood;
   anatomical_image_filename:=filename        ;is the filename of the anatomical image;
   num_non_zero_feat_elements:=1              ;is the number of non zero elements in the feature vector;
@@ -224,10 +224,10 @@ public:
   const std::string get_anatomical1_filename() const;
   const int get_neighbours_num() const;
   const int get_num_non_zero_feat() const;
-  const double get_kernel_par() const;
-  double get_PETkernel_par();
-  double get_Ndistance_par();
-  double get_Nmdistance_par();
+  const double get_sigma_m() const;
+  double get_sigma_p();
+  double get_sigma_dp();
+  double get_sigma_dm();
   const bool get_only_2D() const;
   int get_subiter_num();
   double get_kSD();
@@ -236,7 +236,6 @@ public:
    shared_ptr<TargetT>& get_kpnorm_sptr();
    shared_ptr<TargetT>& get_kmnorm_sptr();
    shared_ptr<TargetT>& get_anatomical1_sptr();
-   shared_ptr<TargetT>& get_nkernel_sptr();
    const TimeFrameDefinitions& get_time_frame_definitions() const;
   const BinNormalisation& get_normalisation() const;
   const shared_ptr<BinNormalisation>& get_normalisation_sptr() const;
@@ -256,7 +255,6 @@ public:
   void set_kpnorm_sptr(shared_ptr<TargetT>&);
   void set_kmnorm_sptr(shared_ptr<TargetT>&);
   void set_anatomical1_sptr(shared_ptr<TargetT>&);
-  void set_nkernel_sptr(shared_ptr<TargetT>&);
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
@@ -334,15 +332,15 @@ protected:
  std::string anatomical1_image_filename;
   mutable Array<3,float> distance;
   double kSt_dev;
-  shared_ptr<TargetT> anatomical1_sptr, nkernel_sptr;
+  shared_ptr<TargetT> anatomical1_sptr;
   shared_ptr<TargetT> kpnorm_sptr,kmnorm_sptr;
  //kernel parameters
   int neighbours_num,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
-  double kernel_par;
+  double sigma_m;
   bool only_2D;
   bool hybrid;
-  double PETkernel_par;
-  double Ndistance_par, Nmdistance_par;
+  double sigma_p;
+  double sigma_dp, sigma_dm;
 
   //! points to the object for the total input projection data
   shared_ptr<ProjData> proj_data_sptr;
@@ -450,14 +448,14 @@ protected:
 
 /*! Compute for each voxel, jl, of the PET image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
 /*! The information is stored in the image, kImage */
-  void compute_kernelised_image(TargetT &kImage, TargetT &Image, double kernel_par,
+  void compute_kernelised_image(TargetT &kImage, TargetT &Image, double sigma_m,
                                                             int neighbours_num,
                                                             const TargetT &current_estimate,
                                                             bool only_2D);
 
  /*! Similar to compute_kernelised_image() but this is the special case when the feature vectors contains only one non-zero element. */
  /*! The computation becomes faster because we do not need to create norm matrixes*/
-void fast_compute_kernelised_image(TargetT &kImage, TargetT &Image, double kernel_par,
+void fast_compute_kernelised_image(TargetT &kImage, TargetT &Image, double sigma_m,
                                                           int neighbours_num,
                                                           const TargetT &current_estimate,
                                                           bool only_2D);
