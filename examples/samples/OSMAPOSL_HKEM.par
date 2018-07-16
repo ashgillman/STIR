@@ -1,44 +1,56 @@
 OSMAPOSLParameters :=
-; example file for the HKEM or KEM reconstruction
-; this is a minimal file showing how to set the kernel-specific parameters.
+; Example file for using [Hybrid] Kernelized Expectation Maximisation (HKEM or KEM).
+; See documentation of KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData
+; for more info.
 
-objective function type:= KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData
+objective function type := KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData
 KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
-input file := ${ksINPUT}
-
+; Input to reconstruct. Overwrite this or provide and environment variable
+input file := ${INPUT}
 
 ; here we have the possibility to choose the parameters which define the kernel matrix and the name of the anatomical image.
 ; the following are the defaults values
 
-; the following can be 0 or 1 for KEM or HKEM respectevely
-hybrid:=1  
+; 1 (default): use hybrid kernel (prior from MR and PET estimate)
+; OR
+; 0 kernel is MR-only
+hybrid := ${HYBRID}
 
-; the following controls the edge preservation from the anatomical image, the bigger the stronger  
-sigma_m:= 1
+; Gaussian scaling parameter for the anatomical prior (units of image intensity)
+; It controls the edge preservation from the anatomical image, the bigger the stronger
+; default: 1
+sigma_m := ${SIGMA_M}
 
-; the following controls the edge preservation from the functional image, the bigger the stronger
-sigma_p:=1
+; Gaussian scaling parameter for the PET estimate (units of PET image intensity)
+; It controls the edge preservation from the functional image, the bigger the stronger
+; default: 1
+sigma_p := ${SIGMA_P}
 
-; the following two should be the same and control the importance of the distance between neigbouring voxels, big value suppress more noise 
-; optimal between 1 and 5 
-sigma_dm:=1
-sigma_dp:=1
+; NB: sigma_dm and sigma_dp should be the same unless you know what you are doing
+; Spatial Gaussian scaling parameter for the anatomical prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dm := ${SIGMA_DM}
+; Spatial Gaussian scaling parameter for the PET prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dp := ${SIGMA_DP}
 
-; the following controls the number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
-number of neighbours:= 3
+; Number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
+; default: 3
+number of neighbours := ${N_NEIGHBOURS}
 
-; the following controls the number of non-zero elements in the feature vectors
-number of non-zero feature elements:=1
+; Number of non-zero elements in the feature vectors
+; default: 1
+number of non-zero feature elements := ${N_NONZERO_FEAT}
 
 ; this is the file name of the anatomical image
-anatomical image filename:=filename
+anatomical image filename := ${ANATOMICAL}
 
 ; the following should be 1 if you want to reconstruct 2D data
-only_2D:=0
+only_2D := 0
 
 ; the following is the output prefix of the PET reconstructed image, it will finish with "_k.hv/v"
-kernelised output filename prefix := ${ksOUTPUT}
+kernelised output filename prefix := ${OUTPUT}
 
 maximum absolute segment number to process := -1
 zero end planes of segment 0 := 1
@@ -46,13 +58,13 @@ zero end planes of segment 0 := 1
 projector pair type := Matrix
 Projector Pair Using Matrix Parameters :=
 Matrix type := Ray Tracing
-Ray Tracing Matrix Parameters:=
+Ray Tracing Matrix Parameters :=
   restrict to cylindrical fov := 1
   ; use a slightly better approximation than simple ray tracing
   number of rays in tangential direction to trace for each bin := 10
   ; remove one symmetry such that we can use more subsets
   do symmetry 90degrees min phi := 0
-End Ray Tracing Matrix Parameters:=
+End Ray Tracing Matrix Parameters :=
 End Projector Pair Using Matrix Parameters :=
 
 recompute sensitivity := 1
@@ -60,26 +72,26 @@ use subset sensitivities := 1
 ; optional. if not set, the subset sensitities won't be saved
 subset sensitivity filenames:= sens_%d.hv
 
-Bin Normalisation type:=From ProjData
+Bin Normalisation type := From ProjData
 Bin Normalisation From ProjData :=
-normalisation projdata filename:= ${NORM}
-End Bin Normalisation From ProjData:=
+normalisation projdata filename := ${NORM}
+End Bin Normalisation From ProjData :=
 
 additive sinogram := ${BACKGROUND}
 
-zoom:= 1
+zoom := 1
 xy output image size (in pixels) := 344
 
-end KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+end KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters :=
 
 ;the following is the prefix name of the reconstructed coefficient image
-output filename prefix := ${ksOUTPUT}
+output filename prefix := ${OUTPUT}
 
 
-number of subsets:= 21
+number of subsets := 21
 ;in order to obtain the PET kernelised image we always need to run 1 more sub-iteration (ex: if we want 210 sub-iterations we need to run 211)
-number of subiterations:= 211
-save estimates at subiteration intervals:= 21
+number of subiterations := 211
+save estimates at subiteration intervals := 21
 
 
 
