@@ -1,4 +1,6 @@
 OSMAPOSLParameters :=
+; example file for the HKEM or KEM reconstruction
+; this is a minimal file showing how to set the kernel-specific parameters.
 
 objective function type:= KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData
 KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
@@ -6,18 +8,36 @@ KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 input file := ${ksINPUT}
 
 
-; Daniel: here we have the possibility to choose the parameters which define the kernel matrix and the name of the anatomical image.
+; here we have the possibility to choose the parameters which define the kernel matrix and the name of the anatomical image.
+; the following are the defaults values
 
-hybrid:=${hybrid}
-sigma_m:= ${kpar}
-sigma_p:=${kPpar}
-sigma_dm:=${Dmpar}
-sigma_dp:=${Dpar}
-neighbours_num:= ${N}
-anatomical1_image_filename:=${mr}
-num_non_zero_feat_elements:=${num_non_zero_feat_elements}
+; the following can be 0 or 1 for KEM or HKEM respectevely
+hybrid:=1  
+
+; the following controls the edge preservation from the anatomical image, the bigger the stronger  
+sigma_m:= 1
+
+; the following controls the edge preservation from the functional image, the bigger the stronger
+sigma_p:=1
+
+; the following two should be the same and control the importance of the distance between neigbouring voxels, big value suppress more noise 
+; optimal between 1 and 5 
+sigma_dm:=1
+sigma_dp:=1
+
+; the following controls the number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
+number of neighbours:= 3
+
+; the following controls the number of non-zero elements in the feature vectors
+number of non-zero feature elements:=1
+
+; this is the file name of the anatomical image
+anatomical image filename:=filename
+
+; the following should be 1 if you want to reconstruct 2D data
 only_2D:=0
 
+; the following is the output prefix of the PET reconstructed image, it will finish with "_k.hv/v"
 kernelised output filename prefix := ${ksOUTPUT}
 
 maximum absolute segment number to process := -1
@@ -52,6 +72,7 @@ xy output image size (in pixels) := 344
 
 end KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
+;the following is the prefix name of the reconstructed coefficient image
 output filename prefix := ${ksOUTPUT}
 
 
