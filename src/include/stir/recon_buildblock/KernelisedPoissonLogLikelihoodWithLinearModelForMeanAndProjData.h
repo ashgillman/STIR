@@ -34,8 +34,6 @@
 #include <string>
 START_NAMESPACE_STIR
 
-class DistributedCachingInformation;
-
 
 
 /*!
@@ -46,8 +44,6 @@ class DistributedCachingInformation;
   necessary for computing the gradient of the objective function
   are performed via a ProjectorByBinPair object together with
   a BinNormalisation object.
-
-  \see PoissonLogLikelihoodWithLinearModelForMean.
 
   This class implements the objective function obtained using the Kernel method (KEM) and Hybrid kernel method (HKEM).
   This implementation corresponds to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation
@@ -134,12 +130,7 @@ public:
   //! Default constructor calls set_defaults()
   KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData();
 
-  //! Destructor
-  /*! Calls end_distributable_computation()
-   */
-  ~KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData();
-
-  /*! \name Functions to get parameters
+   /*! \name Functions to get parameters
    \warning Be careful with changing shared pointers. If you modify the objects in
    one place, all objects that use the shared pointer will be affected.
   */
@@ -154,8 +145,6 @@ public:
   double get_sigma_dp();
   double get_sigma_dm();
   const bool get_only_2D() const;
-  int get_subiter_num();
-  double get_kSD();
   bool get_hybrid();
 
    shared_ptr<TargetT>& get_kpnorm_sptr();
@@ -172,8 +161,6 @@ public:
   */
   //@{
 
-  void set_subiter_num(int subiter_num);
-  void set_kSD(double kSD);
   void set_kpnorm_sptr(shared_ptr<TargetT>&);
   void set_kmnorm_sptr(shared_ptr<TargetT>&);
   void set_anatomical_sptr(shared_ptr<TargetT>&);
@@ -185,6 +172,8 @@ public:
                                                           const TargetT &current_estimate,
                                                           const int subset_num);
 protected:
+  virtual Succeeded
+    set_up(shared_ptr<TargetT>  const& target_sptr);
 
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
@@ -195,12 +184,10 @@ protected:
   std::string input_filename,kernelised_output_filename_prefix;
   std::string current_kimage_filename;
   std::string sens_filenames;
- int subiter_num;
+
 
   //! Anatomical image filename
- std::string anatomical_image_filename;
-  mutable Array<3,float> distance;
-  double kSt_dev;
+  std::string anatomical_image_filename;
   shared_ptr<TargetT> anatomical_sptr;
   shared_ptr<TargetT> kpnorm_sptr,kmnorm_sptr;
  //kernel parameters
@@ -222,6 +209,7 @@ protected:
   /*! Has to be called by post_processing in the leaf-class */
   virtual bool post_processing();
 
+
   //! Checks of the current subset scheme is approximately balanced
   /*! For this class, this means that the sub-sensitivities are
       approximately the same. The test simply looks at the number
@@ -230,12 +218,14 @@ protected:
   */
 
  private:
-
+int subiteration_counter;
+double anatomical_sd;
+mutable Array<3,float> distance;
 /*! Create a matrix containing the norm of the difference between two feature vectors, \f$ \|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \| \f$. */
 /*! This is done for the PET image which keeps changing*/
   void  calculate_norm_matrix(TargetT &normp,
                               const int &dimf_row,
-                              int &dimf_col,
+                              const int &dimf_col,
                               const TargetT& pet,
                               Array<3,float> distance);
 
@@ -243,20 +233,24 @@ protected:
 /*! which does not  change over iteration.*/
   void  calculate_norm_const_matrix(TargetT &normm,
                               const int &dimf_row,
-                              int &dimf_col);
+                              const int &dimf_col);
 
 /*! Estimate the SD of the anatomical image to be used as normalisation for the feature vector */
   void estimate_stand_dev_for_anatomical_image(double &SD);
 
 /*! Compute for each voxel, jl, of the PET image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
 /*! The information is stored in the image, kImage */
-  void compute_kernelised_image(TargetT &kImage, TargetT &Image,
+  void full_compute_kernelised_image(TargetT &kImage, const TargetT &Image,
                                                             const TargetT &current_estimate);
 
  /*! Similar to compute_kernelised_image() but this is the special case when the feature vectors contains only one non-zero element. */
  /*! The computation becomes faster because we do not need to create norm matrixes*/
-void fast_compute_kernelised_image(TargetT &kImage, TargetT &Image,
+void compact_compute_kernelised_image(TargetT &kImage, const TargetT &Image,
                                                           const TargetT &current_estimate);
+
+/*! choose between compact_compute_kernelised_image() and  full_compute_kernelised_image()*/
+void compute_kernelised_image(TargetT &kImage, const TargetT &Image,
+                                                         const TargetT &current_estimate);
 
 };
 

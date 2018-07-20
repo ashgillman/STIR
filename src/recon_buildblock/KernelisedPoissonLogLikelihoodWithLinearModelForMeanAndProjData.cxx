@@ -85,8 +85,7 @@ set_defaults()
   this->only_2D = 0;
   this->kernelised_output_filename_prefix="";
 
-  this->subiter_num=0;
-  this->kSt_dev=0;
+
   this->hybrid=0;
   }
 
@@ -113,12 +112,25 @@ initialise_keymap()
 }
 
 template<typename TargetT>
+Succeeded
+KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_up(shared_ptr<TargetT>  const& target_sptr)
+{
+    base_type::set_up(target_sptr);
+
+   // PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up (target_sptr);
+    return Succeeded::yes;
+}
+
+template<typename TargetT>
 bool
 KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 post_processing()
 {
     PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::post_processing ();
 
+    this->subiteration_counter=0;
+    this->anatomical_sd=0;
 
   if(!this->only_2D){
    this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours*this->num_neighbours ;}
@@ -132,17 +144,16 @@ post_processing()
       set_anatomical_sptr (this->anatomical_sptr);
       info(boost::format("Reading anatomical data '%1%'")
            % anatomical_image_filename  );
-      double SD=0;
 
       if (is_null_ptr(this->anatomical_sptr))
           {
-              warning("Failed to read anatomical file 1 %s", anatomical_image_filename.c_str());
-              return true;
+              error("Failed to read anatomical file 1 %s", anatomical_image_filename.c_str());
+              return false;
           }
-      estimate_stand_dev_for_anatomical_image(SD);
-      this->set_kSD (SD);
+      estimate_stand_dev_for_anatomical_image(this->anatomical_sd);
+
       info(boost::format("SD from anatomical image 1 calculated = '%1%'")
-           % this->get_kSD ());
+           % this->anatomical_sd);
 
 
       if(num_non_zero_feat>1){
@@ -173,14 +184,6 @@ KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData()
 {
   this->set_defaults();
 }
-
-template <typename TargetT>
-KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-~KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData()
-{
-  end_distributable_computation();
-}
-
 
 /***************************************************************
   get_ functions
@@ -240,18 +243,6 @@ KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 get_hybrid()
 { return this->hybrid; }
 
-template <typename TargetT>
-int
-KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-get_subiter_num()
-{ return this->subiter_num; }
-
-template <typename TargetT>
-double
-KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-get_kSD()
-{ return this->kSt_dev; }
-
 template <typename TargetT >
 shared_ptr<TargetT> &KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::get_kpnorm_sptr()
 { return this->kpnorm_sptr; }
@@ -268,23 +259,6 @@ shared_ptr<TargetT> &KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProj
 /***************************************************************
   set_ functions
 ***************************************************************/
-
-template<typename TargetT>
-void
-KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_subiter_num (int new_subiter_num)
-{
-  this->subiter_num = new_subiter_num;
-
-}
-
-template<typename TargetT>
-void
-KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_kSD (double kSD)
-{
-  this->kSt_dev = kSD;
-}
 
 template<typename TargetT>
 void
@@ -318,7 +292,7 @@ set_anatomical_sptr (shared_ptr<TargetT>& arg)
 template<typename TargetT>
 void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::calculate_norm_matrix(TargetT &normp,
                                                                                                      const int& dimf_row,
-                                                                                                     int& dimf_col,
+                                                                                                     const int& dimf_col,
                                                                                                      const TargetT& pet,
                                                                                                      Array<3,float> distance)
                                            {
@@ -418,7 +392,7 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::c
 template<typename TargetT>
 void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::calculate_norm_const_matrix(TargetT &normm,
                                                           const int& dimf_row,
-                                                          int& dimf_col)
+                                                          const int &dimf_col)
 {
 
 
@@ -515,8 +489,6 @@ for (int x=min_x;x<= max_x;x++)
                              }
 
                          }
-
-                 // std::cout <<l<<std::endl;
                      }
                 }
 
@@ -588,7 +560,8 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::e
                         kmean += (*anatomical_sptr)[z][y][x];
                         nv+=1;}
                         else{
-                            continue;}
+                            error("The anatomical image might contain nan, negatives or infinitive");
+                            break;}
                     }
                 }
             }
@@ -619,14 +592,14 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::e
        SD= sqrt(kStand_dev / (nv-1));
 }
 
+
+
 template<typename TargetT>
-void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::compute_kernelised_image(
+void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::full_compute_kernelised_image (
                          TargetT& kImage,
-                         TargetT& Image,
+                         const TargetT& Image,
                          const TargetT& current_estimate)
 {
-
-
 
 
 //  Something very weird happens here if I do not get_empty_copy() KImage elements will be all nan
@@ -673,9 +646,6 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::c
 
       int l=0,m=0, dimf_row=0;
       int dimf_col = this->num_non_zero_feat-1;
-      double kSD=0;
-
-      kSD=this->get_kSD ();
 
       dimf_row=this->num_voxels;
 
@@ -746,7 +716,7 @@ for (int x=min_x;x<= max_x;x++)
 
                    }
 
-                   kanatomical=exp(-(*this->kmnorm_sptr)[0][l][m]/square(kSD*sigma_m)/2)*
+                   kanatomical=exp(-(*this->kmnorm_sptr)[0][l][m]/square(anatomical_sd*sigma_m)/2)*
                                 exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(sigma_dm)));
 
                    kImage[z][y][x] += kanatomical*kPET*Image[z+dz][y+dy][x+dx];
@@ -767,9 +737,9 @@ for (int x=min_x;x<= max_x;x++)
 
 
 template<typename TargetT>
-void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::fast_compute_kernelised_image(
+void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::compact_compute_kernelised_image(
                          TargetT& kImage,
-                         TargetT& Image,
+                         const TargetT& Image,
                          const TargetT& current_estimate)
 {
 
@@ -815,8 +785,6 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::f
              }
 
 // get anatomical standard deviation over all voxels
-     double kSD=0;
-     kSD=get_kSD();
 
 // calculate kernelised image
 
@@ -866,7 +834,7 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::f
                                 kPET=1;
 
                             }  // the following "pnkernel" is the normalisation of the kernel
-                                    kanatomical=exp(-square(((*anatomical_sptr)[z][y][x]-(*anatomical_sptr)[z+dz][y+dy][x+dx])/kSD*sigma_m)/2)*
+                                    kanatomical=exp(-square(((*anatomical_sptr)[z][y][x]-(*anatomical_sptr)[z+dz][y+dy][x+dx])/anatomical_sd*sigma_m)/2)*
                                                  exp(-square(distance[dz][dy][dx]/grid_spacing.x ())/(2*square(sigma_dm)));
 
                                     pnkernel+=kPET*kanatomical;
@@ -884,6 +852,21 @@ void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::f
 
 }
 
+template<typename TargetT>
+void KernelisedPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::compute_kernelised_image(
+                         TargetT& kImage,
+                         const TargetT& Image,
+                         const TargetT& current_estimate)
+{
+
+    if(this->num_non_zero_feat==1){
+        compact_compute_kernelised_image (kImage, Image, current_estimate);
+                                    }
+    else{
+      full_compute_kernelised_image (kImage, Image,
+                               current_estimate);
+}
+}
 
 template<typename TargetT>
 void
@@ -894,22 +877,19 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 {
 
 
-    set_subiter_num (this->subiter_num+=1);
+    subiteration_counter+=1;
 
     unique_ptr<TargetT> kImage_uptr(current_estimate.get_empty_copy());
     TargetT& kImage=*kImage_uptr;
 
-    if(this->num_non_zero_feat==1){
-        fast_compute_kernelised_image (kImage, *current_estimate.clone(), current_estimate);
-                                    }
-    else{
+
       compute_kernelised_image(kImage, *current_estimate.clone(),
                                current_estimate);
-    }
-if((get_subiter_num ()-1)%this->get_num_subsets()==0){
+
+if((subiteration_counter-1)%this->get_num_subsets()==0){
 
     char itC[10];
-    sprintf (itC, "%d", get_subiter_num ()-1);
+    sprintf (itC, "%d", subiteration_counter-1);
     std::string it=itC;
     std::string us="_";
     std::string k="_k.hv";
@@ -926,39 +906,24 @@ if((get_subiter_num ()-1)%this->get_num_subsets()==0){
 
          shared_ptr<TargetT> sens_sptr(read_from_file<TargetT>(current_sensitivity_filename));
 
-         unique_ptr<TargetT> ksens_uptr(current_estimate.get_empty_copy());
-         TargetT& ksens= *ksens_uptr;
+         shared_ptr<TargetT> ksens_sptr(current_estimate.get_empty_copy());
+         TargetT& ksens= *ksens_sptr;
 
-         //write_to_file("sens1", ksens);
+          compute_kernelised_image(ksens, *sens_sptr,
+                                          current_estimate);
+        *ksens_sptr=ksens;
 
-
-         if(this->num_non_zero_feat==1){
-             fast_compute_kernelised_image(ksens, *sens_sptr,
-                                                              current_estimate);
-         }
-         else{
-                 compute_kernelised_image(ksens, *sens_sptr,
-                                                             current_estimate);
-
-         }
-
-
-        this->set_subset_sensitivity_sptr (shared_ptr< TargetT >(ksens.clone()),subset_num);
+        this->set_subset_sensitivity_sptr (ksens_sptr,subset_num);
 
  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::compute_sub_gradient_without_penalty_plus_sensitivity (
              gradient,
              kImage,
              subset_num);
 
-  if(this->num_non_zero_feat==1){
-      fast_compute_kernelised_image(gradient,*gradient.clone(),
-                                             current_estimate);
-
-  }
-  else{
-      compute_kernelised_image(gradient,*gradient.clone(),
+        unique_ptr<TargetT> gradient_uptr(gradient.clone());
+        compute_kernelised_image(gradient,*gradient_uptr,
                                                          current_estimate);
-  }}
+  }
 
 
 template<typename TargetT>
@@ -969,16 +934,12 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
 {
   double accum=0.;
 
-  shared_ptr<TargetT> kImage_sptr(current_estimate.get_empty_copy());
-  TargetT& kImage=*kImage_sptr;
+  unique_ptr<TargetT> kImage_uptr(current_estimate.get_empty_copy());
+  TargetT& kImage=*kImage_uptr;
 
-  if(this->num_non_zero_feat==1){
-      fast_compute_kernelised_image (kImage, *current_estimate.clone(), current_estimate);
-                                  }
-  else{
-    compute_kernelised_image(kImage, *current_estimate.clone(),
+     compute_kernelised_image(kImage, current_estimate,
                              current_estimate);
-  }
+
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::actual_compute_objective_function_without_penalty (
             kImage,
             subset_num);
