@@ -77,6 +77,7 @@ public:
 
 
 private:
+  typedef ForwardProjectorByBin base_type;
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;

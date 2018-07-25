@@ -64,6 +64,7 @@ public:
 
 
 private:
+  typedef ForwardProjectorByBin base_type;
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
   VectorWithOffset<float> tang_kernel;
