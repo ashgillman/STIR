@@ -221,7 +221,17 @@ public:
   //! used to check acceptable parameter ranges, etc...
   virtual bool post_processing();
 
- 
+  // virtual void compute_sub_gradient_without_penalty_plus_sensitivity(
+  //   TargetT& gradient, const TargetT &current_estimate, const int subset_num);
+
+  // virtual const TargetT& get_subset_sensitivity(const int subset_num);
+
+  //! operations for the start of the iteration
+  /*! This saves an internal reference to current_alpha_estimate for
+      kernel calculation.
+  */
+  virtual void start_of_iteration_processing(TargetT &current_alpha_estimate);
+
 private:
   friend void do_sensitivity(const char * const par_filename);
 

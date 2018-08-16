@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
+    Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,7 +30,8 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
-      
+  \author Ashley Gillman
+
 */
 #include <algorithm>
 // for time(), used as seed for random stuff
@@ -429,6 +431,7 @@ reconstruct(shared_ptr<TargetT > const& target_data_sptr)
 
   for(subiteration_num=start_subiteration_num;subiteration_num<=num_subiterations && this->terminate_iterations==false; subiteration_num++)
   {
+    this->start_of_iteration_processing(*target_data_sptr);
     this->update_estimate(*target_data_sptr);
     this->end_of_iteration_processing(*target_data_sptr);
   }
@@ -527,6 +530,14 @@ set_up(shared_ptr<TargetT > const& target_data_sptr)
  
   return Succeeded::yes;
 }
+
+template <typename TargetT>
+void IterativeReconstruction<TargetT>::
+start_of_iteration_processing(TargetT &current_estimate)
+{
+  // do nothing
+}
+
 
 template <typename TargetT>
 void IterativeReconstruction<TargetT>::

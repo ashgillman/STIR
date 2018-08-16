@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
+    Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,6 +33,7 @@
   \author Kris Thielemans
   \author Alexey Zverovich
   \author PARAPET project
+  \author Ashley Gillman
 
 */
 /* Modification history
@@ -135,7 +137,8 @@ public:
     reconstruct();
 
   //! executes the reconstruction with \a target_data_sptr as initial value
-  /*! After calling set_up(), repeatedly calls update_estimate(); end_of_iteration_processing();
+  /*! After calling set_up(), repeatedly calls 
+      start_of_iteration_processing(); update_estimate(); end_of_iteration_processing();
       See end_of_iteration_processing() for info on saving to file.
 
       Final reconstruction is saved in \a target_data_sptr
@@ -255,6 +258,11 @@ protected:
 
   //! the principal operations for updating the data iterates at each iteration
   virtual void update_estimate(TargetT &current_estimate)=0;
+
+  //! operations for the start of the iteration
+  /*! Doesn't actually do anything by default.
+  */
+  virtual void start_of_iteration_processing(TargetT &current_estimate);
 
   //! operations for the end of the iteration
   /*! At specific subiteration numbers, this 

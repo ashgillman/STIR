@@ -1478,8 +1478,52 @@ update_estimate(TargetT &current_alpha_coefficent_image)
   
 }
 
+template <typename TargetT>
+void KOSMAPOSLReconstruction<TargetT>::
+start_of_iteration_processing(TargetT &current_alpha_estimate)
+{
+  this->pet_prior_sptr.reset(current_alpha_estimate.clone());
+}
+
 template class KOSMAPOSLReconstruction<DiscretisedDensity<3,float> >;
 //template class KOSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >;
+
+
+// template <typename TargetT>
+// void
+// KOSMAPOSLReconstruction<TargetT>::
+// compute_sub_gradient_without_penalty_plus_sensitivity(
+//   TargetT& gradient, const TargetT& current_alpha_coefficent_image,
+//   const int subset_num)
+// {
+//   // TODO: does this need to copy?
+//   unique_ptr<TargetT>
+//     current_update_image_ptr(current_alpha_coefficent_image.get_empty_copy());
+//   compute_kernelised_image(
+//     *current_update_image_ptr, current_alpha_coefficent_image,
+//     current_alpha_coefficent_image);
+
+//   base_type::compute_sub_gradient_without_penalty_plus_sensitivity(
+//       *gradient, *current_update_image_ptr, subset_num);
+
+//   // TODO: does this need clone?
+//   compute_kernelised_image (*gradient, *gradient.clone(),
+//                             current_alpha_coefficent_image);
+// };
+
+
+// template <typename TargetT>
+// const TargetT&
+// KOSMAPOSLReconstruction<TargetT>::get_subset_sensitivity(const int subset_num)
+// {
+//   // Calc normal sensitivity
+//   const TargetT& sensitivity = base_type::get_subset_sensitivity(subset_num);
+//   // Kernelise sensitivity
+//   unique_ptr< TargetT > ksens_ptr(sensitivity.get_empty_copy());
+//   compute_kernelised_image(*ksens_ptr, sensitivity,
+//                            current_alpha_coefficent_image);
+//   return ksens_ptr;
+// };
 
 
 END_NAMESPACE_STIR
