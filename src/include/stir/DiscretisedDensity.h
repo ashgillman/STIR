@@ -5,7 +5,8 @@
     Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2018, University College London
-    Copyright (C) 2018, CSIRO
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -55,7 +56,14 @@ START_NAMESPACE_STIR
 
   It defines functionality common to all discretised densities: the
   data structure itself (Array) and an origin.
- 
+
+  The origin of a DiscretisedDensity is defined as the vector from the
+  frame-of-reference point to the center of the first z plane in the
+  data structure (TODO: what about 1D??). The frame-of-reference point
+  attempts to be identical to what the vendor would call the origin
+  for the scanner. For many scanners, this is not supported in STIR,
+  and will default to the center of the first ring of the scanner.
+
   \warning The origin is always a CartesianCoordinate3D<float>, 
   independent of what coordinate system (or even dimension) this
   class represents. Similarly, the functions that translate from
@@ -134,10 +142,12 @@ public:
                             const IndexRange<num_dimensions>& range,
                             const CartesianCoordinate3D<float>& origin);
 
-  //! Return the origin 
+  //! Return the origin, the vector from the frame-of-reference point
+  //! to the center of the first z plane
   inline const CartesianCoordinate3D<float>& get_origin()  const;
 
-  //! Set the origin
+  //! Set the origin, the vector from the frame-of-reference point
+  //! to the center of the first z plane
   inline void set_origin(const CartesianCoordinate3D<float> &origin);
 
   //! \name Translation between indices and physical coordinates

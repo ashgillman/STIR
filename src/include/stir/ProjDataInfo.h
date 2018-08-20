@@ -366,8 +366,13 @@ public:
   //! Get vertical bed position
   float get_bed_position_vertical() const { return bed_position_vertical; }
 
+  //! Convert from coordinate space centered on the gantry to a bed-based one.
   CartesianCoordinate3D<float>
   get_physical_coordinates_for_gantry_coordinates(const CartesianCoordinate3D<float> gantry_coords) const;
+
+  //! Get the location of the scanners frame-of-reference in mm from center of gantry.
+  const CartesianCoordinate3D<float>
+  get_location_of_vendor_frame_of_reference_in_gantry_space() const;
 
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;

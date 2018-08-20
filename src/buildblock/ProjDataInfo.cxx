@@ -660,5 +660,11 @@ get_physical_coordinates_for_gantry_coordinates
   return gantry_coords;
 }
 
+const CartesianCoordinate3D<float>
+ProjDataInfo::
+get_location_of_vendor_frame_of_reference_in_gantry_space() const {
+  return CartesianCoordinate3D<float>(0, 0, 0);
+}
+
 END_NAMESPACE_STIR
 
