@@ -136,18 +136,27 @@ VoxelsOnCartesianGridTests::run_tests()
 				  /*num_tang_poss=*/16));
   
   {
-    cerr << "Tests with constructor with ProjDataInfo with default sizes\n";
+    cerr << "Tests with constructor with ProjDataInfo with default sizes, no offset\n";
     
     const float zoom=2.3F;
-    //KT 10/12/2001 removed make_xy_size_odd things
+    const CartesianCoordinate3D<float> offset(0, 0, 0);
+    const CartesianCoordinate3D<float> middle_of_scanner_in_physical_coordinates
+      ((scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing() / 2,
+       0, 0);
     
     VoxelsOnCartesianGrid<float>
-      ob4(*proj_data_info_ptr,zoom,origin);
+      ob4(*proj_data_info_ptr, zoom, offset);
     
     IndexRange<3> obtained_range = ob4.get_index_range();
     CartesianCoordinate3D<int> low_bound, high_bound;
     check(obtained_range.get_regular_range(low_bound, high_bound), "test regular range");
-    
+
+    CartesianCoordinate3D<float> middle_of_scanner_in_index_coordinates;
+    for (unsigned int i=1; i<=3; ++i) {
+      middle_of_scanner_in_index_coordinates[i] = (low_bound + high_bound)[i];
+    }
+    middle_of_scanner_in_index_coordinates /= 2;
+
     // KT 11/09/2001 adapted as this constructor now takes zoom into account
     const bool is_arccorrected =
       dynamic_cast<ProjDataInfoCylindricalArcCorr const *>(proj_data_info_ptr.get()) != 0;
@@ -170,7 +179,9 @@ VoxelsOnCartesianGridTests::run_tests()
                                                 scanner_ptr->get_default_bin_size()/zoom,
                                                 scanner_ptr->get_default_bin_size()/zoom),
                    "test on grid spacing");
-    check_if_equal(ob4.get_origin(), origin, "test on origin");
+    check_if_equal(ob4.get_physical_coordinates_for_indices(middle_of_scanner_in_index_coordinates),
+                   middle_of_scanner_in_physical_coordinates,
+                   "test on origin");
   }
   {
     
@@ -181,9 +192,13 @@ VoxelsOnCartesianGridTests::run_tests()
     const int min_xy = -(xy_size/2);
     const int max_xy = -(xy_size/2)+xy_size-1;
     const int z_size = 9;
+    const CartesianCoordinate3D<float> offset(1, 2, 3);
+    const CartesianCoordinate3D<float> middle_of_scanner_in_physical_coordinates
+      ((scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing() / 2,
+       0, 0);
 
     VoxelsOnCartesianGrid<float>
-      ob5(*proj_data_info_ptr,zoom,origin,CartesianCoordinate3D<int>(z_size,xy_size,xy_size));
+      ob5(*proj_data_info_ptr,zoom,offset,CartesianCoordinate3D<int>(z_size,xy_size,xy_size));
     // put in some data for further testing
     ob5.fill(1.F);
     ob5[1][1][1]=5.F;
@@ -191,15 +206,25 @@ VoxelsOnCartesianGridTests::run_tests()
     IndexRange<3> obtained_range = ob5.get_index_range();
     CartesianCoordinate3D<int> low_bound, high_bound;
     check(obtained_range.get_regular_range(low_bound, high_bound), "test regular range");
-    
     check_if_equal(low_bound, CartesianCoordinate3D<int>(0,min_xy,min_xy),"test on index range: lower bounds");
     check_if_equal(high_bound, CartesianCoordinate3D<int>(z_size-1,max_xy,max_xy),"test on index range: higher bounds");
+
+    CartesianCoordinate3D<float> middle_of_scanner_in_index_coordinates;
+    for (unsigned int i=1; i<=3; ++i) {
+      middle_of_scanner_in_index_coordinates[i] = (low_bound + high_bound)[i];
+    }
+    middle_of_scanner_in_index_coordinates /= 2;
+
     check_if_equal(ob5.get_grid_spacing(), 
                    CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing()/2,
                                                 scanner_ptr->get_default_bin_size()/zoom,
                                                 scanner_ptr->get_default_bin_size()/zoom),
                    "test on grid spacing");
-    check_if_equal(ob5.get_origin(), origin);
+    check_if_equal(// image centre
+                   ob5.get_physical_coordinates_for_indices(middle_of_scanner_in_index_coordinates),
+                   // gantry centre with offset
+                   middle_of_scanner_in_physical_coordinates + offset,
+                   "test on origin");
     
     {
       cerr << "Tests get_empty_voxels_on_cartesian_grid\n";
@@ -255,7 +280,7 @@ VoxelsOnCartesianGridTests::run_tests()
   }
 
   {
-    cerr << "Test LPS with different orientations:" << std::endl;
+    cerr << "Testing LPS with different orientations" << std::endl;
 
     shared_ptr<ExamInfo> hfs_exam_info_sptr(new ExamInfo());
     hfs_exam_info_sptr->patient_position.set_orientation(PatientPosition::head_in);
