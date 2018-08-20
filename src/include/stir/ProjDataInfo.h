@@ -33,6 +33,7 @@
 
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
+#include "stir/CartesianCoordinate3D.h"
 #include "stir/shared_ptr.h"
 #include "stir/unique_ptr.h"
 #include <string>
@@ -364,7 +365,12 @@ public:
 
   //! Get vertical bed position
   float get_bed_position_vertical() const { return bed_position_vertical; }
-  
+
+  //! Get the location of the scanners frame-of-reference in mm from
+  //! center of gantry.
+  const CartesianCoordinate3D<float>
+  get_location_of_vendor_frame_of_reference_in_gantry_space() const;
+
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 
