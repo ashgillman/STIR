@@ -33,6 +33,7 @@
 
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
+#include "stir/CartesianCoordinate3D.h"
 #include "stir/shared_ptr.h"
 #include "stir/unique_ptr.h"
 #include <string>
@@ -364,7 +365,10 @@ public:
 
   //! Get vertical bed position
   float get_bed_position_vertical() const { return bed_position_vertical; }
-  
+
+  CartesianCoordinate3D<float>
+  get_physical_coordinates_for_gantry_coordinates(const CartesianCoordinate3D<float> gantry_coords) const;
+
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 

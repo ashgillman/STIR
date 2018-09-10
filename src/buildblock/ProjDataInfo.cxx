@@ -652,5 +652,13 @@ operator>=(const ProjDataInfo& proj_data_info) const
   return (proj_data_info == *smaller_proj_data_info_sptr);
 }
 
+CartesianCoordinate3D<float>
+ProjDataInfo::
+get_physical_coordinates_for_gantry_coordinates
+(const CartesianCoordinate3D<float> gantry_coords) const
+{
+  return gantry_coords;
+}
+
 END_NAMESPACE_STIR
 
