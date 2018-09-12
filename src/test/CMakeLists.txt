@@ -44,6 +44,8 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_interpolate
 )
 
+set(all_test_targets)
+
 set(buildblock_simple_tests
         test_Array
         test_ArrayFilter
@@ -65,6 +67,7 @@ set(buildblock_simple_tests
         test_GeneralisedPoissonNoiseGenerator
 	test_multiple_proj_data
 )
+list(APPEND all_test_targets ${buildblock_simple_tests})
 
 include(stir_test_exe_targets)
 
@@ -81,6 +84,7 @@ if (BUILD_TESTING)
 ADD_TEST(test_linear_regression
    ${CMAKE_CURRENT_BINARY_DIR}/test_linear_regression ${CMAKE_CURRENT_SOURCE_DIR}/input/test_linear_regression.in
 )
+list(APPEND all_test_targets test_linear_regression)
 
 if (BUILD_EXECUTABLES)
 ## test_stir_math needs to know the location of the stir_math executable
@@ -89,6 +93,7 @@ if (BUILD_EXECUTABLES)
 ADD_TEST(NAME test_stir_math
    COMMAND test_stir_math $<TARGET_FILE:stir_math>
 )
+list(APPEND all_test_targets test_stir_math)
 set_tests_properties(test_stir_math PROPERTIES DEPENDS stir_math)
 # Final note: we could use TARGET_FILE to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
 endif()
@@ -118,6 +123,7 @@ if (HAVE_ITK)
     )
     ADD_TEST(test_IO_ITKMulticomponent
     	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/nifti/disp_4D.nii)
+    list(APPEND all_test_targets test_IO_ITKMulticomponent)
 endif()
 
 # now for each of these, add a test
@@ -126,19 +132,31 @@ foreach(file_format ${file_format_tests})
   ADD_TEST(${test_name}
 		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
 endforeach()
+list(APPEND all_test_targets ${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity)
 
 # Parametric tests
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile 
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile_short
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+list(APPEND all_test_targets test_IO_ParametricDiscretisedDensity)
 
 # Dynamic tests
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile 
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile_short
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+#list(APPEND all_test_targets test_IO_DynamicDiscretisedDensity_Interfile_short)
 ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
 	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
+list(APPEND all_test_targets test_IO_DynamicDiscretisedDensity)
+
+# custom command, type `make check` to compile and run tests
+# unfortunately `make test` doesn't run the compile stage
+# see https://stackoverflow.com/a/736838/3903368
+add_custom_target(tests DEPENDS ${all_test_targets})
+add_custom_target(check
+	COMMAND ${CMAKE_CTEST_COMMAND}
+	DEPENDS ${all_test_targets})
 
 endif(BUILD_TESTING)
