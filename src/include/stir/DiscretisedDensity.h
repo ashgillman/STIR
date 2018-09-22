@@ -219,6 +219,15 @@ public:
     get_indices_closest_to_relative_coordinates(const CartesianCoordinate3D<float>& coords) const;
 
   //! Return the indices of the basis-function closest to the given point.
+  /*! The input argument should be in 'LPS' coordinates relative to the origin.
+      Implementation uses
+      stir::round on the result of get_index_coordinates_for_LPS_coordinates.
+  */
+  inline
+    BasicCoordinate<num_dimensions,int>
+    get_indices_closest_to_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
+  //! Return the indices of the basis-function closest to the given point.
   /*! The input argument should be in 'physical' coordinates.
       Implementation uses get_index_coordinates_for_relative_coordinates.
   */
@@ -233,6 +242,14 @@ public:
   inline
     BasicCoordinate<num_dimensions,float>
     get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
+  //! Return the index-coordinates of the basis-function closest to the given point.
+  /*! The input argument should be in 'LPS' coordinates relative to the origin.
+    Implementation uses actual_get_index_coordinates_for_LPS_coordinates.
+  */
+  inline
+    BasicCoordinate<num_dimensions,float>
+    get_index_coordinates_for_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const;
 
   //@}
 
@@ -304,7 +321,10 @@ public:
 
 private:
   CartesianCoordinate3D<float> origin;
-  
+
+  void
+  swap_axes_based_on_orientation(CartesianCoordinate3D<float>& coordinates,
+                                 const PatientPosition::PositionValue patient_position) const;
 };
 
 END_NAMESPACE_STIR

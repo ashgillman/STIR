@@ -211,15 +211,11 @@ get_indices_closest_to_physical_coordinates(const CartesianCoordinate3D<float>& 
 }
 
 template<int num_dimensions, typename elemT>
-CartesianCoordinate3D<float>
+void
 DiscretisedDensity<num_dimensions, elemT>::
-get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const
+swap_axes_based_on_orientation(CartesianCoordinate3D<float>& coordinates,
+                                    const PatientPosition::PositionValue patient_position) const
 {
-  CartesianCoordinate3D<float> coordinates
-    = this->get_physical_coordinates_for_indices(indices);
-  const PatientPosition::PositionValue patient_position
-    = this->get_exam_info().patient_position.get_position();
-
   switch (patient_position) {
   case PatientPosition::unknown_position:
     // If unknown, assume HFS
@@ -245,12 +241,22 @@ get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& in
     coordinates.z() *= -1;
     break;
 
-  // We can do
-
   default:
     throw std::runtime_error("Unsupported patient position, can't convert to LPS.");
   }
+}
 
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const
+{
+  CartesianCoordinate3D<float> coordinates
+    = this->get_physical_coordinates_for_indices(indices);
+  const PatientPosition::PositionValue patient_position
+    = this->get_exam_info().patient_position.get_position();
+
+  swap_axes_based_on_orientation(coordinates, patient_position);
   return coordinates;
 }
 
