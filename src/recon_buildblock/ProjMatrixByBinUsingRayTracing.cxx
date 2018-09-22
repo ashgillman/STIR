@@ -749,8 +749,8 @@ calculate_proj_matrix_elems_for_one_bin(
           start_of_tor_projected_to_axis_without_offset(
             m_in_mm - sampling_distance_of_adjacent_LORs_z/2, 0, 0);
         CartesianCoordinate3D<float>
-          end_of_tor_projected_to_axis_without_offset
-          (m_in_mm + sampling_distance_of_adjacent_LORs_z/2, 0, 0);
+          end_of_tor_projected_to_axis_without_offset(
+            m_in_mm + sampling_distance_of_adjacent_LORs_z/2, 0, 0);
         // Shift to bed coordinates
         start_of_tor_projected_to_axis_without_offset
           -= proj_data_info_sptr
@@ -815,6 +815,10 @@ calculate_proj_matrix_elems_for_one_bin(
   
 }
 
+/* this is used when
+   (tantheta==0 && sampling_distance_of_adjacent_LORs_z==2*voxel_size.z())
+  it adds two  adjacents z with their half value
+  */
 static void 
 add_adjacent_z(ProjMatrixElemsForOneBin& lor, 
                const float z_of_first_voxel, 

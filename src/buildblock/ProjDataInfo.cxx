@@ -650,6 +650,7 @@ operator>=(const ProjDataInfo& proj_data_info) const
 const CartesianCoordinate3D<float>
 ProjDataInfo::
 get_location_of_vendor_frame_of_reference_in_gantry_space() const {
+  // naming
   double gantry_length
     = (scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing();
 

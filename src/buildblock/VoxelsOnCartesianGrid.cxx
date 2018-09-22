@@ -290,6 +290,7 @@ init_from_proj_data_info(const ProjDataInfo& proj_data_info,
   */
 
   // TODO: is there something weird happens if {x,y}_size is even?
+  // GEOMTODO: Bed offset, see GetBedOffset
   CartesianCoordinate3D<float> image_centre_in_image_space
     = CartesianCoordinate3D<float>((z_size - 1) * z_sampling / 2.F, 0, 0);
   CartesianCoordinate3D<float> origin_in_gantry_space
