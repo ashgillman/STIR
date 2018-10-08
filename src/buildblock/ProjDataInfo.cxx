@@ -663,7 +663,10 @@ get_physical_coordinates_for_gantry_coordinates
 const CartesianCoordinate3D<float>
 ProjDataInfo::
 get_location_of_vendor_frame_of_reference_in_gantry_space() const {
-  return CartesianCoordinate3D<float>(0, 0, 0);
+  // ORIGINTODO: Ask scanner for offset from middle
+  double middle_of_first_ring_to_middle_of_last
+    = (scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing();
+  return CartesianCoordinate3D<float>(middle_of_first_ring_to_middle_of_last / 2.F, 0, 0);
 }
 
 END_NAMESPACE_STIR

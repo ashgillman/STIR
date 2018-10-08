@@ -4,6 +4,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -25,6 +27,7 @@
   \author Sanida Mustafovic 
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
+  \author Ashley Gillman
 
 
 */
@@ -243,21 +246,44 @@ init_from_proj_data_info(const ProjDataInfo& proj_data_info,
   if (y_size_used==0)
     warning("VoxelsOnCartesianGrid: constructed image with y_size 0\n");
 
-  // Origin is -'ve of the location of the vendor frame of reference
-  // in this space.
-  // TODO: is there something weird happens if {x,y}_size is even?
-  CartesianCoordinate3D<float> centre_of_gantry
-    = CartesianCoordinate3D<float>(z_size * z_sampling / 2.F, 0, 0);
-  this->set_origin(
-    -(centre_of_gantry
-      + proj_data_info.get_location_of_vendor_frame_of_reference_in_gantry_space())
-    + offset);
-
   IndexRange3D range(0, z_size-1,
                      -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
                      -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
-
   this->grow(range);
+  CartesianCoordinate3D<int> low_bound, high_bound;
+  range.get_regular_range(low_bound, high_bound);
+
+  /* we want the image centered over the center of the gantry, with some offset.
+     i.e., centre_of_gantry + offset
+           = frame_of_ref_in_gantry_coordinates + origin + image_centre_in_image_coordinates
+     so, origin =
+       centre_of_gantry + offset
+       - (frame_of_ref_in_gantry_coordinates + image_centre_in_image_coordinates)
+
+     NB: The following is only valid because we want gantry and image
+     space have same axes direction. Otherwise vectors in image and
+     gantry space couln't be added directly.
+  */
+  const float distance_first_to_last_ring
+    = (proj_data_info.get_scanner_sptr()->get_num_rings() - 1)
+     * proj_data_info.get_scanner_sptr()->get_ring_spacing();
+  CartesianCoordinate3D<float> gantry_centre_in_gantry_coordinates
+      (distance_first_to_last_ring / 2, 0, 0);
+
+  // TODO: is there something weird happens if {x,y}_size is even?
+  CartesianCoordinate3D<float> image_centre_in_relative_coordinates;
+  for (unsigned int i=1; i<=3; ++i) {
+    image_centre_in_relative_coordinates[i]
+      = this->get_relative_coordinates_for_indices(low_bound + high_bound)[i] / 2;
+  }
+  CartesianCoordinate3D<float> frame_of_ref_in_gantry_coordinates
+    = proj_data_info.get_location_of_vendor_frame_of_reference_in_gantry_space();
+
+  std::cout << "zsize: " << z_size
+            << ", zsample: " << z_sampling << std::endl;
+  this->set_origin
+    (gantry_centre_in_gantry_coordinates + offset
+     - (frame_of_ref_in_gantry_coordinates + image_centre_in_relative_coordinates));
 }
 
 /*!

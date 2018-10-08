@@ -140,7 +140,7 @@ VoxelsOnCartesianGridTests::run_tests()
     
     const float zoom=2.3F;
     const CartesianCoordinate3D<float> offset(0, 0, 0);
-    const CartesianCoordinate3D<float> middle_of_scanner_in_physical_coordinates
+    const CartesianCoordinate3D<float> middle_of_scanner_in_relative_coordinates
       ((scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing() / 2,
        0, 0);
     
@@ -151,11 +151,11 @@ VoxelsOnCartesianGridTests::run_tests()
     CartesianCoordinate3D<int> low_bound, high_bound;
     check(obtained_range.get_regular_range(low_bound, high_bound), "test regular range");
 
-    CartesianCoordinate3D<float> middle_of_scanner_in_index_coordinates;
+    CartesianCoordinate3D<float> middle_of_image_in_index_coordinates;
     for (unsigned int i=1; i<=3; ++i) {
-      middle_of_scanner_in_index_coordinates[i] = (low_bound + high_bound)[i];
+      middle_of_image_in_index_coordinates[i] = (low_bound + high_bound)[i];
     }
-    middle_of_scanner_in_index_coordinates /= 2;
+    middle_of_image_in_index_coordinates /= 2;
 
     // KT 11/09/2001 adapted as this constructor now takes zoom into account
     const bool is_arccorrected =
@@ -179,9 +179,9 @@ VoxelsOnCartesianGridTests::run_tests()
                                                 scanner_ptr->get_default_bin_size()/zoom,
                                                 scanner_ptr->get_default_bin_size()/zoom),
                    "test on grid spacing");
-    check_if_equal(ob4.get_physical_coordinates_for_indices(middle_of_scanner_in_index_coordinates),
-                   middle_of_scanner_in_physical_coordinates,
-                   "test on origin");
+    check_if_equal(ob4.get_relative_coordinates_for_indices(middle_of_image_in_index_coordinates),
+                   middle_of_scanner_in_relative_coordinates,
+                   "test centered on middle of gantry");
   }
   {
     
@@ -193,7 +193,7 @@ VoxelsOnCartesianGridTests::run_tests()
     const int max_xy = -(xy_size/2)+xy_size-1;
     const int z_size = 9;
     const CartesianCoordinate3D<float> offset(1, 2, 3);
-    const CartesianCoordinate3D<float> middle_of_scanner_in_physical_coordinates
+    const CartesianCoordinate3D<float> middle_of_scanner_in_relative_coordinates
       ((scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing() / 2,
        0, 0);
 
@@ -209,23 +209,20 @@ VoxelsOnCartesianGridTests::run_tests()
     check_if_equal(low_bound, CartesianCoordinate3D<int>(0,min_xy,min_xy),"test on index range: lower bounds");
     check_if_equal(high_bound, CartesianCoordinate3D<int>(z_size-1,max_xy,max_xy),"test on index range: higher bounds");
 
-    CartesianCoordinate3D<float> middle_of_scanner_in_index_coordinates;
+    CartesianCoordinate3D<float> middle_of_image_in_index_coordinates;
     for (unsigned int i=1; i<=3; ++i) {
-      middle_of_scanner_in_index_coordinates[i] = (low_bound + high_bound)[i];
+      middle_of_image_in_index_coordinates[i] = (low_bound + high_bound)[i];
     }
-    middle_of_scanner_in_index_coordinates /= 2;
+    middle_of_image_in_index_coordinates /= 2;
 
     check_if_equal(ob5.get_grid_spacing(), 
                    CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing()/2,
                                                 scanner_ptr->get_default_bin_size()/zoom,
                                                 scanner_ptr->get_default_bin_size()/zoom),
                    "test on grid spacing");
-    check_if_equal(// image centre
-                   ob5.get_physical_coordinates_for_indices(middle_of_scanner_in_index_coordinates),
-                   // gantry centre with offset
-                   middle_of_scanner_in_physical_coordinates + offset,
-                   "test on origin");
-    
+    check_if_equal(ob5.get_relative_coordinates_for_indices(middle_of_image_in_index_coordinates),
+                   middle_of_scanner_in_relative_coordinates + offset,
+                   "test centered on middle + offset");
     {
       cerr << "Tests get_empty_voxels_on_cartesian_grid\n";
       
