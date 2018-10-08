@@ -300,9 +300,6 @@ process_data()
     assert(fabs(m_last + m_first)<m_last*10E-4);
   }
 #endif
-  this->shift_detector_coordinates_to_origin =
-    CartesianCoordinate3D<float>(this->proj_data_info_ptr->get_m(Bin(0,0,0,0)),0, 0);
-  // ^ ORIGINTODO
 
   float total_scatter = 0 ;
 

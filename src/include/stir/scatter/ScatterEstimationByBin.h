@@ -261,7 +261,6 @@ class ScatterEstimationByBin : public ParsingObject
     find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const;
   // private:
   const ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr;
-  CartesianCoordinate3D<float>  shift_detector_coordinates_to_origin;
 
   //! average detection efficiency of unscattered counts
   double
