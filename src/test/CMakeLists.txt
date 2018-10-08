@@ -154,6 +154,7 @@ list(APPEND all_test_targets test_IO_DynamicDiscretisedDensity)
 # custom command, type `make check` to compile and run tests
 # unfortunately `make test` doesn't run the compile stage
 # see https://stackoverflow.com/a/736838/3903368
+add_custom_target(tests DEPENDS ${all_test_targets})
 add_custom_target(check
 	COMMAND ${CMAKE_CTEST_COMMAND}
 	DEPENDS ${all_test_targets})
