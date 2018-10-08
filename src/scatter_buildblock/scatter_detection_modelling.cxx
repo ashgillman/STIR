@@ -70,13 +70,12 @@ find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
   this->proj_data_info_ptr->
     find_cartesian_coordinates_of_detection(
                                             detector_coord_A,detector_coord_B,bin);
-  det_num_A =
-    this->find_in_detection_points_vector(detector_coord_A + 
-                                          this->shift_detector_coordinates_to_origin);
-  // ORIGINTODO: ^
-  det_num_B =
-    this->find_in_detection_points_vector(detector_coord_B + 
-                                          this->shift_detector_coordinates_to_origin);
+  det_num_A = this->find_in_detection_points_vector
+    (this->proj_data_info_ptr->get_physical_coordinates_for_gantry_coordinates
+     (detector_coord_A));
+  det_num_B = this->find_in_detection_points_vector
+    (this->proj_data_info_ptr->get_physical_coordinates_for_gantry_coordinates
+     (detector_coord_B));
 }
 
 float
