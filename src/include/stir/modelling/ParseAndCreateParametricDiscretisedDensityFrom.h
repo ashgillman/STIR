@@ -1,9 +1,9 @@
 /*
     Copyright (C) 2019, University College London
-    This file is part of STIR. 
- 
-    SPDX-License-Identifier: Apache-2.0 
- 
+    This file is part of STIR.
+
+    SPDX-License-Identifier: Apache-2.0
+
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -31,15 +31,11 @@ class KeyParser;
   \see ParseAndCreateFrom<DiscretisedDensity<3, elemT>, ExamDataT>
 */
 template <class elemT, class ExamDataT>
-  class ParseAndCreateFrom<ParametricDiscretisedDensity<VoxelsOnCartesianGrid<elemT> >,
-                           ExamDataT>
-  : public ParseDiscretisedDensityParameters
-{
- public:
-  typedef ParametricDiscretisedDensity<VoxelsOnCartesianGrid<elemT> > output_type;
-  inline
-    output_type*
-    create(const ExamDataT&) const;
+class ParseAndCreateFrom<ParametricDiscretisedDensity<VoxelsOnCartesianGrid<elemT>>, ExamDataT>
+    : public ParseDiscretisedDensityParameters {
+public:
+  typedef ParametricDiscretisedDensity<VoxelsOnCartesianGrid<elemT>> output_type;
+  inline output_type* create(const ExamDataT&) const;
 };
 
 END_NAMESPACE_STIR

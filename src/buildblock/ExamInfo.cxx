@@ -20,16 +20,15 @@
 #include <iomanip>
 
 #ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
+#  include <strstream.h>
 #else
-#include <sstream>
+#  include <sstream>
 #endif
 
 START_NAMESPACE_STIR
 
 std::string
-ExamInfo::parameter_info() const
-{
+ExamInfo::parameter_info() const {
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
   char str[30000];
@@ -41,44 +40,35 @@ ExamInfo::parameter_info() const
   s << "Calibration Factor: " << std::fixed << std::setprecision(12) << this->calibration_factor << std::setprecision(5) << '\n';
   s << "Radionuclide: " << this->radionuclide << '\n';
   s << "Patient position: " << this->patient_position.get_position_as_string() << '\n';
-  s << "Scan start time: " << std::fixed << std::setprecision(1) <<this->start_time_in_secs_since_1970 <<'\n'; // reset for further floats
- 
-  if (this->start_time_in_secs_since_1970>0)
-    {
-      DateTimeStrings time = secs_since_Unix_epoch_to_Interfile_datetime(this->start_time_in_secs_since_1970);
-      s << "   which is " << time.date << " " << time.time << '\n';
-    }
-  if (this->time_frame_definitions.get_num_time_frames() == 1)
-    {
-      s << "Time frame start - end (duration), all in secs: "
-        << this->time_frame_definitions.get_start_time(1)
-        << " - "
-        << this->time_frame_definitions.get_end_time(1)
-        << " ("
-        << this->time_frame_definitions.get_duration(1)
-        << ")\n";
-    }
+  s << "Scan start time: " << std::fixed << std::setprecision(1) << this->start_time_in_secs_since_1970
+    << '\n'; // reset for further floats
+
+  if (this->start_time_in_secs_since_1970 > 0) {
+    DateTimeStrings time = secs_since_Unix_epoch_to_Interfile_datetime(this->start_time_in_secs_since_1970);
+    s << "   which is " << time.date << " " << time.time << '\n';
+  }
+  if (this->time_frame_definitions.get_num_time_frames() == 1) {
+    s << "Time frame start - end (duration), all in secs: " << this->time_frame_definitions.get_start_time(1) << " - "
+      << this->time_frame_definitions.get_end_time(1) << " (" << this->time_frame_definitions.get_duration(1) << ")\n";
+  }
   s << "number of energy windows:=1\n"
-    << "energy window lower level[1] := "
-    << this->get_low_energy_thres() << '\n'
-    << "energy window upper level[1] := "
-    << this->get_high_energy_thres() << '\n';
-        
+    << "energy window lower level[1] := " << this->get_low_energy_thres() << '\n'
+    << "energy window upper level[1] := " << this->get_high_energy_thres() << '\n';
+
   return s.str();
 }
 
-bool 
-ExamInfo::operator == (const ExamInfo &p1) const {      
-    return  abs(this->up_energy_thres - p1.up_energy_thres )<=1 && /* keV*/
-            abs(this->low_energy_thres - p1.low_energy_thres) <=1 &&/* keV*/
-            this->radionuclide==p1.radionuclide &&
-            this->time_frame_definitions==p1.time_frame_definitions &&
-//              this->branching_ratio==p1.branching_ratio &&
-            ((this->calibration_factor<=0 && p1.calibration_factor<=0) || 
-             abs(this->calibration_factor/p1.calibration_factor -1.)<=1E-3) &&
-            this->imaging_modality==p1.imaging_modality &&
-            this->originating_system==p1.originating_system &&
-            this->patient_position==p1.patient_position &&
-            abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970)<=.5;/* sec */ }
+bool
+ExamInfo::operator==(const ExamInfo& p1) const {
+  return abs(this->up_energy_thres - p1.up_energy_thres) <= 1 &&   /* keV*/
+         abs(this->low_energy_thres - p1.low_energy_thres) <= 1 && /* keV*/
+         this->radionuclide == p1.radionuclide && this->time_frame_definitions == p1.time_frame_definitions &&
+         //              this->branching_ratio==p1.branching_ratio &&
+         ((this->calibration_factor <= 0 && p1.calibration_factor <= 0) ||
+          abs(this->calibration_factor / p1.calibration_factor - 1.) <= 1E-3) &&
+         this->imaging_modality == p1.imaging_modality && this->originating_system == p1.originating_system &&
+         this->patient_position == p1.patient_position &&
+         abs(this->start_time_in_secs_since_1970 - p1.start_time_in_secs_since_1970) <= .5; /* sec */
+}
 
 END_NAMESPACE_STIR

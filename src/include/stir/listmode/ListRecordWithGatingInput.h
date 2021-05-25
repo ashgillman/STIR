@@ -30,12 +30,11 @@
 
 START_NAMESPACE_STIR
 
-class ListRecordWithGatingInput : public virtual ListRecord
-{
- public:
+class ListRecordWithGatingInput : public virtual ListRecord {
+public:
   virtual bool is_gating_input() const { return false; }
-  virtual ListGatingInput&  gating_input() = 0;
-  virtual const ListGatingInput&  gating_input() const = 0;
+  virtual ListGatingInput& gating_input() = 0;
+  virtual const ListGatingInput& gating_input() const = 0;
 };
 
 END_NAMESPACE_STIR

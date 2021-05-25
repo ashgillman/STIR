@@ -8,7 +8,7 @@
 
   \author Richard Brown
   \author Kris Thielemans
-  
+
 */
 /*
     Copyright (C) 2019, 2021 University College London
@@ -31,38 +31,29 @@
 #include "stir/LORCoordinates.h"
 #include "stir/recon_array_functions.h"
 #ifdef parallelproj_built_with_CUDA
-#include "parallelproj_cuda.h"
+#  include "parallelproj_cuda.h"
 #else
-#include "parallelproj_c.h"
+#  include "parallelproj_c.h"
 #endif
 // for debugging, remove later
 #include "stir/info.h"
 #include "stir/stream.h"
 #include <iostream>
 
-
 START_NAMESPACE_STIR
 
 //////////////////////////////////////////////////////////
-const char * const
-BackProjectorByBinParallelproj::registered_name =
-  "Parallelproj";
+const char* const BackProjectorByBinParallelproj::registered_name = "Parallelproj";
 
-BackProjectorByBinParallelproj::BackProjectorByBinParallelproj() :
-    _cuda_device(0), _cuda_verbosity(true)
-{
-    this->_already_set_up = false;
-    this->_do_not_setup_helper = false;
+BackProjectorByBinParallelproj::BackProjectorByBinParallelproj() : _cuda_device(0), _cuda_verbosity(true) {
+  this->_already_set_up = false;
+  this->_do_not_setup_helper = false;
 }
 
-BackProjectorByBinParallelproj::~BackProjectorByBinParallelproj()
-{
-}
+BackProjectorByBinParallelproj::~BackProjectorByBinParallelproj() {}
 
 void
-BackProjectorByBinParallelproj::
-initialise_keymap()
-{
+BackProjectorByBinParallelproj::initialise_keymap() {
   parser.add_start_key("Back Projector Using Parallelproj Parameters");
   parser.add_stop_key("End Back Projector Using Parallelproj Parameters");
   parser.add_key("CUDA device", &_cuda_device);
@@ -70,33 +61,27 @@ initialise_keymap()
 }
 
 void
-BackProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper)
-{
+BackProjectorByBinParallelproj::set_helper(shared_ptr<detail::ParallelprojHelper> helper) {
   this->_helper = helper;
   this->_do_not_setup_helper = true;
 }
 
 void
-BackProjectorByBinParallelproj::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
-{
-    BackProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
-    check(*proj_data_info_sptr, *_density_sptr);
-    _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
+BackProjectorByBinParallelproj::set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+                                       const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr) {
+  BackProjectorByBin::set_up(proj_data_info_sptr, density_info_sptr);
+  check(*proj_data_info_sptr, *_density_sptr);
+  _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
 
-    // Create sinogram
-    _proj_data_to_backproject_sptr.reset(
-                new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
+  // Create sinogram
+  _proj_data_to_backproject_sptr.reset(new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
 
-    if (!this->_do_not_setup_helper)
-      _helper = std::make_shared<detail::ParallelprojHelper>(*proj_data_info_sptr, *density_info_sptr);
+  if (!this->_do_not_setup_helper)
+    _helper = std::make_shared<detail::ParallelprojHelper>(*proj_data_info_sptr, *density_info_sptr);
 }
 
-const DataSymmetriesForViewSegmentNumbers *
-BackProjectorByBinParallelproj::
-get_symmetries_used() const
-{
+const DataSymmetriesForViewSegmentNumbers*
+BackProjectorByBinParallelproj::get_symmetries_used() const {
   if (!this->_already_set_up)
     error("BackProjectorByBin method called without calling set_up first.");
   return _symmetries_sptr.get();
@@ -116,73 +101,56 @@ back_project(const ProjData& proj_data, int subset_num, int num_subsets)
 #endif
 
 void
-BackProjectorByBinParallelproj::
-get_output(DiscretisedDensity<3,float> &density) const
-{
+BackProjectorByBinParallelproj::get_output(DiscretisedDensity<3, float>& density) const {
 
-    std::vector<float> image_vec(density.size_all());
-    // create an alias for the projection data
-    const ProjDataInMemory& p(*_proj_data_to_backproject_sptr);
+  std::vector<float> image_vec(density.size_all());
+  // create an alias for the projection data
+  const ProjDataInMemory& p(*_proj_data_to_backproject_sptr);
 
-    info("Calling parallelproj backprojector", 2);
+  info("Calling parallelproj backprojector", 2);
 
 #ifdef parallelproj_built_with_CUDA
-    joseph3d_back_cuda(_helper->xstart.data(),
-                       _helper->xend.data(),
-                       image_vec.data(),
-                       _helper->origin.data(),
-                       _helper->voxsize.data(),
-                       p.get_const_data_ptr(),
-                       static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
-                       _helper->imgdim.data(),
-                       /*threadsperblock*/ 64,
-                       /*num_devices*/ -1);
+  joseph3d_back_cuda(_helper->xstart.data(), _helper->xend.data(), image_vec.data(), _helper->origin.data(),
+                     _helper->voxsize.data(), p.get_const_data_ptr(),
+                     static_cast<long long>(p.get_proj_data_info_sptr()->size_all()), _helper->imgdim.data(),
+                     /*threadsperblock*/ 64,
+                     /*num_devices*/ -1);
 #else
-    joseph3d_back(_helper->xstart.data(),
-                  _helper->xend.data(),
-                  image_vec.data(),
-                  _helper->origin.data(),
-                  _helper->voxsize.data(),
-                  p.get_const_data_ptr(),
-                  static_cast<long long>(p.get_proj_data_info_sptr()->size_all()),
-                  _helper->imgdim.data());
+  joseph3d_back(_helper->xstart.data(), _helper->xend.data(), image_vec.data(), _helper->origin.data(), _helper->voxsize.data(),
+                p.get_const_data_ptr(), static_cast<long long>(p.get_proj_data_info_sptr()->size_all()), _helper->imgdim.data());
 #endif
-    info("done", 2);
+  info("done", 2);
 
-    p.release_const_data_ptr();
+  p.release_const_data_ptr();
 
-    // --------------------------------------------------------------- //
-    //   Parallelproj -> STIR image conversion
-    // --------------------------------------------------------------- //
-    std::copy(image_vec.begin(), image_vec.end(), density.begin_all());
+  // --------------------------------------------------------------- //
+  //   Parallelproj -> STIR image conversion
+  // --------------------------------------------------------------- //
+  std::copy(image_vec.begin(), image_vec.end(), density.begin_all());
 
-    // After the back projection, we enforce a truncation outside of the FOV.
-    // This is because the parallelproj projector seems to have some trouble at the edges and this
-    // could cause some voxel values to spiral out of control.
-    //if (_use_truncation)
-      {
-        const float radius = p.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius();
-        const float image_radius = _helper->voxsize[2]*_helper->imgdim[2]/2;
-        truncate_rim(density, static_cast<int>(std::max((image_radius-radius) / _helper->voxsize[2],0.F)));
-      }
+  // After the back projection, we enforce a truncation outside of the FOV.
+  // This is because the parallelproj projector seems to have some trouble at the edges and this
+  // could cause some voxel values to spiral out of control.
+  // if (_use_truncation)
+  {
+    const float radius = p.get_proj_data_info_sptr()->get_scanner_sptr()->get_inner_ring_radius();
+    const float image_radius = _helper->voxsize[2] * _helper->imgdim[2] / 2;
+    truncate_rim(density, static_cast<int>(std::max((image_radius - radius) / _helper->voxsize[2], 0.F)));
+  }
 }
 
 void
-BackProjectorByBinParallelproj::
-start_accumulating_in_new_target()
-{
-    // Call base level
-    BackProjectorByBin::start_accumulating_in_new_target();
-    //  reset the Parallelproj sinogram
-    _proj_data_to_backproject_sptr->fill(0.F);
+BackProjectorByBinParallelproj::start_accumulating_in_new_target() {
+  // Call base level
+  BackProjectorByBin::start_accumulating_in_new_target();
+  //  reset the Parallelproj sinogram
+  _proj_data_to_backproject_sptr->fill(0.F);
 }
 
 void
-BackProjectorByBinParallelproj::
-actual_back_project(const RelatedViewgrams<float>& related_viewgrams,
-                    const int min_axial_pos_num, const int max_axial_pos_num,
-                    const int min_tangential_pos_num, const int max_tangential_pos_num)
-{
+BackProjectorByBinParallelproj::actual_back_project(const RelatedViewgrams<float>& related_viewgrams, const int min_axial_pos_num,
+                                                    const int max_axial_pos_num, const int min_tangential_pos_num,
+                                                    const int max_tangential_pos_num) {
   if ((min_axial_pos_num != this->_proj_data_info_sptr->get_min_axial_pos_num(related_viewgrams.get_basic_segment_num())) ||
       (max_axial_pos_num != this->_proj_data_info_sptr->get_max_axial_pos_num(related_viewgrams.get_basic_segment_num())) ||
       (min_tangential_pos_num != this->_proj_data_info_sptr->get_min_tangential_pos_num()) ||

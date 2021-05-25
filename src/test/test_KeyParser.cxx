@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2020, University College London
     This file is part of STIR.
- 
+
     SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
@@ -26,14 +26,9 @@
 START_NAMESPACE_STIR
 
 template <typename elemT>
-class TestKP : public KeyParser
-{
+class TestKP : public KeyParser {
 public:
-  TestKP()
-    :
-    scalar_v(0),
-    vector_v(2,0)
-  {
+  TestKP() : scalar_v(0), vector_v(2, 0) {
     add_start_key("start");
     add_stop_key("stop");
     add_key("scalar", &scalar_v);
@@ -48,16 +43,15 @@ public:
   \brief Test class for KeyParser
 
 */
-class KeyParserTests : public RunTests
-{
+class KeyParserTests : public RunTests {
 public:
-  template <typename elemT> void run_tests_one_type();
+  template <typename elemT>
+  void run_tests_one_type();
   void run_tests();
 };
 
 void
-KeyParserTests::run_tests()
-{
+KeyParserTests::run_tests() {
   std::cerr << "Tests for KeyParser\n";
   std::cerr << "... int parsing\n";
   run_tests_one_type<int>();
@@ -71,10 +65,9 @@ KeyParserTests::run_tests()
 
 template <typename elemT>
 void
-KeyParserTests::run_tests_one_type()
-{
+KeyParserTests::run_tests_one_type() {
 
-  TestKP<elemT>  parser;
+  TestKP<elemT> parser;
   // basic test if parsing ok
   {
     std::stringstream str;
@@ -93,16 +86,13 @@ KeyParserTests::run_tests_one_type()
         << "scalar[1]:=2\n"
         << "vector[1] := 3\n"
         << "stop     :=\n";
-    try
-      {
-        std::cerr <<  "Next test should write an error (but not crash!)"  << std::endl;
-        parser.parse(str);
-        check(false, "parsing non-vectorised key with vector should have failed");
-      }
-    catch (...)
-      {
-        // ok
-      }
+    try {
+      std::cerr << "Next test should write an error (but not crash!)" << std::endl;
+      parser.parse(str);
+      check(false, "parsing non-vectorised key with vector should have failed");
+    } catch (...) {
+      // ok
+    }
   }
   // test 2 if parsing catches errors
   {
@@ -111,28 +101,22 @@ KeyParserTests::run_tests_one_type()
         << "scalar:=2\n"
         << "vector := 3\n"
         << "stop     :=\n";
-    try
-      {
-        std::cerr <<  "Next test should write an error (but not crash!)"  << std::endl;
-        parser.parse(str);
-        check(false, "parsing vectorised key with non-vector should have failed");
-      }
-    catch (...)
-      {
-        // ok
-      }
+    try {
+      std::cerr << "Next test should write an error (but not crash!)" << std::endl;
+      parser.parse(str);
+      check(false, "parsing vectorised key with non-vector should have failed");
+    } catch (...) {
+      // ok
+    }
   }
-
 }
 
 END_NAMESPACE_STIR
 
-
 USING_NAMESPACE_STIR
 
-
-int main()
-{
+int
+main() {
   KeyParserTests tests;
   tests.run_tests();
   return tests.main_return_value();

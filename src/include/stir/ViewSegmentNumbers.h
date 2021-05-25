@@ -9,7 +9,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
-  
+
 */
 /*
     Copyright (C) 2000 PARAPET partners
@@ -21,8 +21,6 @@
     See STIR/LICENSE.txt for details
 */
 
-
-
 #ifndef __stir_ViewSegmentNumbers_h__
 #define __stir_ViewSegmentNumbers_h__
 
@@ -31,17 +29,15 @@
 START_NAMESPACE_STIR
 
 /*!
-  \brief A very simple class to store view and segment numbers 
-  \ingroup projdata 
+  \brief A very simple class to store view and segment numbers
+  \ingroup projdata
 */
-class ViewSegmentNumbers
-{
+class ViewSegmentNumbers {
 public:
-
   //! an empty constructor (sets everything to 0)
-  inline  ViewSegmentNumbers();
+  inline ViewSegmentNumbers();
   //! constructor taking view and segment number as arguments
-  inline ViewSegmentNumbers( const int view_num,const int segment_num);
+  inline ViewSegmentNumbers(const int view_num, const int segment_num);
 
   //! get segment number for const objects
   inline int segment_num() const;
@@ -49,11 +45,10 @@ public:
   inline int view_num() const;
 
   //! get reference to segment number
-  inline int&  segment_num();
+  inline int& segment_num();
   //! get reference to view number
-  inline int&  view_num();
+  inline int& view_num();
 
- 
   //! comparison operator, only useful for sorting
   /*! order : (0,1) < (0,-1) < (1,1) ...*/
   inline bool operator<(const ViewSegmentNumbers& other) const;
@@ -65,7 +60,6 @@ public:
 private:
   int segment;
   int view;
-
 };
 
 END_NAMESPACE_STIR

@@ -24,118 +24,115 @@
 
 START_NAMESPACE_STIR
 
-shared_ptr<ProjDataInfo> 
-ProjDataInfo::
-create_shared_clone() const
-{
+shared_ptr<ProjDataInfo>
+ProjDataInfo::create_shared_clone() const {
   shared_ptr<ProjDataInfo> sptr(this->clone());
   return sptr;
 }
 
-int 
-ProjDataInfo::get_num_segments() const
-{ return (max_axial_pos_per_seg.get_length());}
-
+int
+ProjDataInfo::get_num_segments() const {
+  return (max_axial_pos_per_seg.get_length());
+}
 
 int
-ProjDataInfo::get_num_axial_poss(const int segment_num) const
-{ return  max_axial_pos_per_seg[segment_num] - min_axial_pos_per_seg[segment_num]+1;}
-
-int 
-ProjDataInfo::get_num_views() const
-{ return max_view_num - min_view_num + 1; }
-
-int 
-ProjDataInfo::get_num_tangential_poss() const
-{ return  max_tangential_pos_num - min_tangential_pos_num + 1; }
+ProjDataInfo::get_num_axial_poss(const int segment_num) const {
+  return max_axial_pos_per_seg[segment_num] - min_axial_pos_per_seg[segment_num] + 1;
+}
 
 int
-ProjDataInfo::get_num_tof_poss() const
-{ return 1; /* always 1 at the moment */ }
-
-int 
-ProjDataInfo::get_min_segment_num() const
-{ return (max_axial_pos_per_seg.get_min_index()); }
-
-int 
-ProjDataInfo::get_max_segment_num()const
-{ return (max_axial_pos_per_seg.get_max_index());  }
+ProjDataInfo::get_num_views() const {
+  return max_view_num - min_view_num + 1;
+}
 
 int
-ProjDataInfo::get_min_axial_pos_num(const int segment_num) const
-{ return min_axial_pos_per_seg[segment_num];}
-
+ProjDataInfo::get_num_tangential_poss() const {
+  return max_tangential_pos_num - min_tangential_pos_num + 1;
+}
 
 int
-ProjDataInfo::get_max_axial_pos_num(const int segment_num) const
-{ return max_axial_pos_per_seg[segment_num];}
+ProjDataInfo::get_num_tof_poss() const {
+  return 1; /* always 1 at the moment */
+}
 
+int
+ProjDataInfo::get_min_segment_num() const {
+  return (max_axial_pos_per_seg.get_min_index());
+}
 
-int 
-ProjDataInfo::get_min_view_num() const
-  { return min_view_num; }
+int
+ProjDataInfo::get_max_segment_num() const {
+  return (max_axial_pos_per_seg.get_max_index());
+}
 
-int 
-ProjDataInfo::get_max_view_num()  const
-{ return max_view_num; }
+int
+ProjDataInfo::get_min_axial_pos_num(const int segment_num) const {
+  return min_axial_pos_per_seg[segment_num];
+}
 
+int
+ProjDataInfo::get_max_axial_pos_num(const int segment_num) const {
+  return max_axial_pos_per_seg[segment_num];
+}
 
-int 
-ProjDataInfo::get_min_tangential_pos_num()const
-{ return min_tangential_pos_num; }
+int
+ProjDataInfo::get_min_view_num() const {
+  return min_view_num;
+}
 
-int 
-ProjDataInfo::get_max_tangential_pos_num()const
-{ return max_tangential_pos_num; }
+int
+ProjDataInfo::get_max_view_num() const {
+  return max_view_num;
+}
 
-float 
-ProjDataInfo::get_costheta(const Bin& bin) const
-{
-  return
-    1/sqrt(1+square(get_tantheta(bin)));
+int
+ProjDataInfo::get_min_tangential_pos_num() const {
+  return min_tangential_pos_num;
+}
+
+int
+ProjDataInfo::get_max_tangential_pos_num() const {
+  return max_tangential_pos_num;
 }
 
 float
-ProjDataInfo::get_m(const Bin& bin) const
-{
-  return 
-    get_t(bin)/get_costheta(bin);
+ProjDataInfo::get_costheta(const Bin& bin) const {
+  return 1 / sqrt(1 + square(get_tantheta(bin)));
 }
 
-const 
-Scanner*
-ProjDataInfo::get_scanner_ptr() const
-{ 
+float
+ProjDataInfo::get_m(const Bin& bin) const {
+  return get_t(bin) / get_costheta(bin);
+}
+
+const Scanner*
+ProjDataInfo::get_scanner_ptr() const {
   return scanner_ptr.get();
 }
 
 shared_ptr<Scanner>
-ProjDataInfo::get_scanner_sptr() const
-{
+ProjDataInfo::get_scanner_sptr() const {
   return scanner_ptr;
 }
 
-
 int
-ProjDataInfo::get_num_non_tof_sinograms() const
-{
+ProjDataInfo::get_num_non_tof_sinograms() const {
   int num_sinos = 0;
-  for (int s=this->get_min_segment_num(); s<= this->get_max_segment_num(); ++s)
+  for (int s = this->get_min_segment_num(); s <= this->get_max_segment_num(); ++s)
     num_sinos += this->get_num_axial_poss(s);
 
   return num_sinos;
 }
 
 int
-ProjDataInfo::get_num_sinograms() const
-{
-    return this->get_num_non_tof_sinograms()*this->get_num_tof_poss();
+ProjDataInfo::get_num_sinograms() const {
+  return this->get_num_non_tof_sinograms() * this->get_num_tof_poss();
 }
 
 std::size_t
-ProjDataInfo::size_all() const
-{ return static_cast<std::size_t>(this->get_num_sinograms()) *
-    static_cast<std::size_t>(this->get_num_views() * this->get_num_tangential_poss()); }
+ProjDataInfo::size_all() const {
+  return static_cast<std::size_t>(this->get_num_sinograms()) *
+         static_cast<std::size_t>(this->get_num_views() * this->get_num_tangential_poss());
+}
 
 END_NAMESPACE_STIR
-

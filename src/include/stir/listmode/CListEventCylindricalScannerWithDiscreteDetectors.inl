@@ -4,9 +4,9 @@
   \file
   \ingroup listmode
   \brief Implementations of class stir::CListEventCylindricalScannerWithDiscreteDetectors
-    
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
@@ -21,24 +21,16 @@
 
 START_NAMESPACE_STIR
 
-CListEventCylindricalScannerWithDiscreteDetectors::
-CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr)
-  : scanner_sptr(scanner_sptr)
-{
-  this->uncompressed_proj_data_info_sptr.reset
-    (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
-     (
-     ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
-                                   1, scanner_sptr->get_num_rings()-1,
-                                   scanner_sptr->get_num_detectors_per_ring()/2,
-                                   scanner_sptr->get_default_num_arccorrected_bins(), 
-                                   false)));
+CListEventCylindricalScannerWithDiscreteDetectors::CListEventCylindricalScannerWithDiscreteDetectors(
+    const shared_ptr<Scanner>& scanner_sptr)
+    : scanner_sptr(scanner_sptr) {
+  this->uncompressed_proj_data_info_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(ProjDataInfo::ProjDataInfoCTI(
+      scanner_sptr, 1, scanner_sptr->get_num_rings() - 1, scanner_sptr->get_num_detectors_per_ring() / 2,
+      scanner_sptr->get_default_num_arccorrected_bins(), false)));
 }
 
 LORAs2Points<float>
-CListEventCylindricalScannerWithDiscreteDetectors::
-get_LOR() const
-{
+CListEventCylindricalScannerWithDiscreteDetectors::get_LOR() const {
   LORAs2Points<float> lor;
   // provide somewhat shorter names for the 2 coordinates
   CartesianCoordinate3D<float>& coord_1 = lor.p1();
@@ -46,47 +38,39 @@ get_LOR() const
 
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  assert(det_pos.pos1().radial_coord()==0);
-  assert(det_pos.pos2().radial_coord()==0);
-  
+  assert(det_pos.pos1().radial_coord() == 0);
+  assert(det_pos.pos2().radial_coord() == 0);
+
   // TODO we're using an obsolete function here which uses a different coordinate system
-  this->get_uncompressed_proj_data_info_sptr()->
-    find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
-                                                         det_pos.pos1().axial_coord(),
-                                                         det_pos.pos2().axial_coord(),
-                                                         det_pos.pos1().tangential_coord(),
-                                                         det_pos.pos2().tangential_coord());
+  this->get_uncompressed_proj_data_info_sptr()->find_cartesian_coordinates_given_scanner_coordinates(
+      coord_1, coord_2, det_pos.pos1().axial_coord(), det_pos.pos2().axial_coord(), det_pos.pos1().tangential_coord(),
+      det_pos.pos2().tangential_coord());
   // find shift in z
-  const float shift = this->scanner_sptr->get_ring_spacing()*
-    (this->scanner_sptr->get_num_rings()-1)/2.F;
+  const float shift = this->scanner_sptr->get_ring_spacing() * (this->scanner_sptr->get_num_rings() - 1) / 2.F;
   coord_1.z() -= shift;
   coord_2.z() -= shift;
-      
+
   return lor;
 }
 
-void 
-CListEventCylindricalScannerWithDiscreteDetectors::
-get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
-{
+void
+CListEventCylindricalScannerWithDiscreteDetectors::get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const {
   assert(dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info) != 0);
   DetectionPositionPair<> det_pos;
   this->get_detection_position(det_pos);
-  if (static_cast<ProjDataInfoCylindricalNoArcCorr const&>(proj_data_info).
-      get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
+  if (static_cast<ProjDataInfoCylindricalNoArcCorr const&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos) ==
+      Succeeded::no)
     bin.set_bin_value(0);
   else
     bin.set_bin_value(1);
 }
 
 bool
-CListEventCylindricalScannerWithDiscreteDetectors::
-is_valid_template(const ProjDataInfo& proj_data_info) const
-{
-	if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
-		return true;
+CListEventCylindricalScannerWithDiscreteDetectors::is_valid_template(const ProjDataInfo& proj_data_info) const {
+  if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info) != 0)
+    return true;
 
-	return false;
+  return false;
 }
 
 END_NAMESPACE_STIR

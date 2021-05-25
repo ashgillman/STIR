@@ -24,11 +24,10 @@
 #include "stir/NumericInfo.h"
 #include <math.h>
 #ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
+#  include <strstream.h>
 #else
-#include <sstream>
+#  include <sstream>
 #endif
-
 
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
@@ -37,8 +36,8 @@ using std::ends;
 
 START_NAMESPACE_STIR
 
-void ROIValues::init()
-{
+void
+ROIValues::init() {
 
   NumericInfo<float> float_limits;
 
@@ -53,29 +52,26 @@ void ROIValues::init()
   std_value = 0;
 }
 
-void ROIValues::update()
-{
-  if(roi_volume==0)
-  {
+void
+ROIValues::update() {
+  if (roi_volume == 0) {
     // ill_defined case...
     mean_value = 0;
     variance_value = 0;
     std_value = 0;
-  }
-  else
-  {
-    mean_value = integral/roi_volume;  
+  } else {
+    mean_value = integral / roi_volume;
     const float square_mean = square(mean_value);
 
-    variance_value = (integral_of_square/roi_volume - square_mean);
+    variance_value = (integral_of_square / roi_volume - square_mean);
     if (fabs(variance_value) < 10E-5 * square_mean)
       variance_value = 0;
     std_value = sqrt(variance_value);
   }
 }
 
-std::string ROIValues::report() const
-{
+std::string
+ROIValues::report() const {
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
   char str[3000];
@@ -119,8 +115,7 @@ stream << val.std_value<<endl;
 return stream;
 
   }
-  
+
 #endif
-  
-    
+
 END_NAMESPACE_STIR

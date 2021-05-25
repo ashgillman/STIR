@@ -9,7 +9,7 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-  \file 
+  \file
   \ingroup numerics
   \brief Sampling functions (currently only stir::sample_function_on_regular_grid)
 
@@ -28,11 +28,11 @@ START_NAMESPACE_STIR
  \param[in] func function to sample
  \param[in] offset offset to use for coordinates (see below)
  \param[in] step step size to use for coordinates (see below)
- 
+
  Symbolically, this function does the following computation for every index in the array
  \code
   out(index) = func(index * step - offset)
- \endcode 
+ \endcode
 
  \par requirement for type  FunctionType
  Due to the calling sequence above, the following has to be defined
@@ -43,11 +43,8 @@ START_NAMESPACE_STIR
  \todo  At the moment, only the 3D version is implemented, but this could be templated.
 */
 template <class FunctionType, class elemT, class positionT>
-inline
-void sample_function_on_regular_grid(Array<3,elemT>& out,
-                                     FunctionType func,
-                                     const BasicCoordinate<3, positionT>&  offset,  
-                                     const BasicCoordinate<3, positionT>& step);
+inline void sample_function_on_regular_grid(Array<3, elemT>& out, FunctionType func, const BasicCoordinate<3, positionT>& offset,
+                                            const BasicCoordinate<3, positionT>& step);
 
 END_NAMESPACE_STIR
 

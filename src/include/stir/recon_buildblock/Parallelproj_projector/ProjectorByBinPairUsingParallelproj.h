@@ -27,32 +27,26 @@
 START_NAMESPACE_STIR
 
 class Succeeded;
-namespace detail { class ParallelprojHelper; }
+namespace detail {
+class ParallelprojHelper;
+}
 /*!
   \ingroup Parallelproj
   \brief A projector pair based on Parallelproj projectors
 */
-class ProjectorByBinPairUsingParallelproj :
-  public RegisteredParsingObject<ProjectorByBinPairUsingParallelproj,
-                                 ProjectorByBinPair,
-                                 ProjectorByBinPair> 
-{ 
- private:
-  typedef
-    RegisteredParsingObject<ProjectorByBinPairUsingParallelproj,
-                            ProjectorByBinPair,
-                            ProjectorByBinPair> 
-    base_type;
+class ProjectorByBinPairUsingParallelproj
+    : public RegisteredParsingObject<ProjectorByBinPairUsingParallelproj, ProjectorByBinPair, ProjectorByBinPair> {
+private:
+  typedef RegisteredParsingObject<ProjectorByBinPairUsingParallelproj, ProjectorByBinPair, ProjectorByBinPair> base_type;
+
 public:
   //! Name which will be used when parsing a ProjectorByBinPair object
-  static const char * const registered_name; 
+  static const char* const registered_name;
 
-  //! Default constructor 
+  //! Default constructor
   ProjectorByBinPairUsingParallelproj();
 
-  Succeeded
-    set_up(const shared_ptr<ProjDataInfo>&,
-           const shared_ptr<DiscretisedDensity<3,float> >&);
+  Succeeded set_up(const shared_ptr<ProjDataInfo>&, const shared_ptr<DiscretisedDensity<3, float>>&);
 
   /// Set verbosity
   void set_verbosity(const bool verbosity);
@@ -67,6 +61,5 @@ private:
 };
 
 END_NAMESPACE_STIR
-
 
 #endif // __stir_recon_buildblock_ProjectorByBinPairUsingParallelproj_h_

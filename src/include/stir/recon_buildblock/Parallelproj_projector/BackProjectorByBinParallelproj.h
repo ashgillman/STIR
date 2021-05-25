@@ -29,19 +29,18 @@ START_NAMESPACE_STIR
 
 class DataSymmetriesForViewSegmentNumbers;
 class ProjDataInMemory;
-namespace detail { class ParallelprojHelper; }
+namespace detail {
+class ParallelprojHelper;
+}
 
 /*!
   \ingroup Parallelproj
   \brief Class for Parallelproj's back projector
 */
-class BackProjectorByBinParallelproj :
-  public RegisteredParsingObject<BackProjectorByBinParallelproj,
-        BackProjectorByBin>
-{ 
+class BackProjectorByBinParallelproj : public RegisteredParsingObject<BackProjectorByBinParallelproj, BackProjectorByBin> {
 public:
-    //! Name which will be used when parsing a BackProjectorByBin object
-    static const char * const registered_name;
+  //! Name which will be used when parsing a BackProjectorByBin object
+  static const char* const registered_name;
 
   //! Default constructor calls reset_timers()
   BackProjectorByBinParallelproj();
@@ -52,24 +51,22 @@ public:
   virtual void initialise_keymap();
 
   //! Stores all necessary geometric info
- /*!
-  If necessary, set_up() can be called more than once.
-  */
- virtual void set_up(		 
-    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
-    );
+  /*!
+   If necessary, set_up() can be called more than once.
+   */
+  virtual void set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+                      const shared_ptr<const DiscretisedDensity<3, float>>& density_info_sptr // TODO should be Info only
+  );
 
   //! Symmetries not used, so returns TrivialDataSymmetriesForBins.
- virtual const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+  virtual const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const;
 
 #if 0
  /// Back project
   void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
 #endif
- /// Get output
- virtual void get_output(DiscretisedDensity<3,float> &) const;
-
+  /// Get output
+  virtual void get_output(DiscretisedDensity<3, float>&) const;
 
   /*! \brief tell the back projector to start accumulating into a new target.
     This function has to be called before any back-projection is initiated.*/
@@ -79,12 +76,10 @@ public:
   void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
 protected:
+  virtual void actual_back_project(const RelatedViewgrams<float>&, const int min_axial_pos_num, const int max_axial_pos_num,
+                                   const int min_tangential_pos_num, const int max_tangential_pos_num);
 
- virtual void actual_back_project(const RelatedViewgrams<float>&,
-                          const int min_axial_pos_num, const int max_axial_pos_num,
-                          const int min_tangential_pos_num, const int max_tangential_pos_num);
-
- private:
+private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
   shared_ptr<ProjDataInMemory> _proj_data_to_backproject_sptr;
   shared_ptr<detail::ParallelprojHelper> _helper;
@@ -96,6 +91,5 @@ protected:
 };
 
 END_NAMESPACE_STIR
-
 
 #endif // __stir_gpu_BackProjectorByBinParallelproj_h__

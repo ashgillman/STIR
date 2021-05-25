@@ -19,7 +19,6 @@
 
 #include "stir/common.h"
 
-
 START_NAMESPACE_STIR
 
 class ProjData;

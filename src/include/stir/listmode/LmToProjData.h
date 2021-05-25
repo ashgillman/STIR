@@ -3,15 +3,15 @@
 //
 //
 /*!
-  \file 
+  \file
   \ingroup listmode
 
   \brief Declaration of the stir::LmToProjData class which is used to bin listmode data to (3d) sinograms
- 
+
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Daniel Deidda
-  
+
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
@@ -23,7 +23,6 @@
 
     See STIR/LICENSE.txt for details
 */
-
 
 #include "stir/listmode/LmToProjDataAbstract.h"
 #include "stir/ProjDataInfo.h"
@@ -45,7 +44,7 @@ class ListTime;
   i.e. (3d) sinograms.
 
   It provides the basic machinery to go through a list mode data file,
-  and write projection data for each time frame. 
+  and write projection data for each time frame.
 
   The class can parse its parameters from an input file. This has the
   following format:
@@ -59,9 +58,9 @@ class ListTime;
   ; parameters that determine the sizes etc of the output
 
     template_projdata := some_projdata_file
-    ; the next can be used to use a smaller number of segments than given 
+    ; the next can be used to use a smaller number of segments than given
     ; in the template
-    maximum absolute segment number to process := 
+    maximum absolute segment number to process :=
 
   ; parameters for saying which events will be stored
 
@@ -86,7 +85,7 @@ class ListTime;
   ; default settings mean no normalisation
   ; Use with care!
 
-    ; in pre normalisation, each event will contribute its 
+    ; in pre normalisation, each event will contribute its
     ; 'normalisation factor' to the bin
     ; in post normalisation, an average factor for the bin will be used
     do pre normalisation  := 0 ; default is 0
@@ -105,9 +104,9 @@ class ListTime;
     ; you can use this to process the list mode data in multiple passes.
     num_segments_in_memory := -1
 
-  End := 
+  End :=
   \endverbatim
-  
+
   Hopefully the only thing that needs explaining are the parameters related
   to prompts and delayeds. These are used to allow different ways of
   processing the data. There are really only 3 useful cases:
@@ -116,22 +115,22 @@ class ListTime;
   <li> 'online' subtraction of delayeds<br>
        This is the default, and adds prompts but subtracts delayeds.
        \code
-    store prompts := 1 
+    store prompts := 1
     store delayeds := 1
        \endcode
   </li>
   <li> store prompts only<br>
-       Use 
+       Use
        \code
-    store prompts := 1 
+    store prompts := 1
     store delayeds := 0
        \endcode
 
   </li>
   <li> store delayeds only<br>
-       Use 
+       Use
        \code
-    store prompts := 0 
+    store prompts := 0
     store delayeds := 1
        \endcode
        Note that now the delayted events will be <strong>added</strong>,
@@ -150,20 +149,18 @@ class ListTime;
   to do it here.
   \todo Timing info or so for get_bin_from_event() for rotating scanners etc.
   \todo There is overlap between the normalisation and the current treatment
-  of bin.get_bin_value(). This is really because we should be using 
+  of bin.get_bin_value(). This is really because we should be using
   something like a EventNormalisation class for pre-normalisation.
 
   \see ListModeData for more info on list mode data.
 
 */
 
-class LmToProjData : public LmToProjDataAbstract
-{
+class LmToProjData : public LmToProjDataAbstract {
 public:
-
   //! Constructor taking a filename for a parameter file
   /*! Will attempt to open and parse the file. */
-  LmToProjData(const char * const par_filename);
+  LmToProjData(const char* const par_filename);
 
   //! Default constructor
   /*! \warning leaves parameters ill-defined. Set them by parsing. */
@@ -213,7 +210,6 @@ public:
   virtual void process_data();
 
 protected:
-  
   //! will be called when a new time frame starts
   /*! The frame numbers start from 1. */
   virtual void start_new_time_frame(const unsigned int new_frame_num);
@@ -223,8 +219,8 @@ protected:
 
   //! will be called to get the bin for a coincidence event
   /*! If bin.get_bin_value()<=0, the event will be ignored. Otherwise,
-    the value will be used as a bin-normalisation factor 
-    (on top of anything done by normalisation_ptr). 
+    the value will be used as a bin-normalisation factor
+    (on top of anything done by normalisation_ptr).
     \todo Would need timing info or so for e.g. time dependent
     normalisation or angle info for a rotating scanner.*/
   virtual void get_bin_from_event(Bin& bin, const ListEvent&) const;
@@ -234,10 +230,10 @@ protected:
       (more ProjDataInfo?)
   */
   int get_compression_count(const Bin& bin) const;
-  
+
   //! Computes a post-normalisation factor (if any) for this bin
   /*! This uses get_compression_count() when do_pre_normalisation=true, or
-      post_normalisation_ptr otherwise. 
+      post_normalisation_ptr otherwise.
   */
   void do_post_normalisation(Bin& bin) const;
 
@@ -291,8 +287,7 @@ protected:
   /*! Will be removed when we have EventNormalisation (or similar) hierarchy */
   shared_ptr<const ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
 
-
-  /*! \brief variable that will be set according to if we are using 
+  /*! \brief variable that will be set according to if we are using
     time frames or num_events_to_store
   */
   bool do_time_frame;

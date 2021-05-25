@@ -3,21 +3,21 @@
  Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
  Copyright (C) 2009 - 2013, King's College London
  This file is part of STIR.
- 
+
  SPDX-License-Identifier: Apache-2.0
- 
+
  See STIR/LICENSE.txt for details
- */  
+ */
 /*!
   \file
-  \ingroup buildblock  
+  \ingroup buildblock
   \brief Declaration of class stir::TimeGateDefinitions
-    
+
   \author Charalampos Tsoumpas
   \author Kris Thielemans
- 
+
   \todo This files needs proper test
-      
+
 */
 #ifndef __stir_TimeGateDefinitions_H__
 #define __stir_TimeGateDefinitions_H__
@@ -39,18 +39,16 @@ START_NAMESPACE_STIR
 
   Will probably be superseded by Study classes.
 */
-class TimeGateDefinitions
-{
- public:
+class TimeGateDefinitions {
+public:
   //! Default constructor: no time gates at all
   TimeGateDefinitions();
-  TimeGateDefinitions(const std::vector<unsigned int>& gate_num_vector, 
-                      const std::vector<double>& duration_vector);
-  TimeGateDefinitions(const std::vector<std::pair<unsigned int, double> >& gate_sequence);
+  TimeGateDefinitions(const std::vector<unsigned int>& gate_num_vector, const std::vector<double>& duration_vector);
+  TimeGateDefinitions(const std::vector<std::pair<unsigned int, double>>& gate_sequence);
   explicit TimeGateDefinitions(const std::string& gdef_filename);
 
   //! Read the gate definitions from a file
-  /*! 
+  /*!
     The filename can point to a simple ASCII text file.
     The format is a number of lines, each existing of 2 numbers
     \verbatim
@@ -58,7 +56,7 @@ class TimeGateDefinitions
     \endverbatim
     This duration is a double number.
 
-    This class in fact allows an extension of the above. Setting 
+    This class in fact allows an extension of the above. Setting
     \a gate_num_of_this_duration to 0 allows skipping
     a time period of the corresponding \a duration_in_secs.
   */
@@ -67,7 +65,7 @@ class TimeGateDefinitions
   //! \name get info for a gate
   //@{
   double get_gate_duration(unsigned int num) const;
-  unsigned int	get_gate_num(unsigned int num) const;
+  unsigned int get_gate_num(unsigned int num) const;
 
   //@}
 
@@ -76,9 +74,9 @@ class TimeGateDefinitions
   //! Get number of gates
   unsigned int get_num_time_gates() const;
 
- private:
+private:
   //! Stores start and end time for each gate
-  std::vector<std::pair<unsigned int, double> > _gate_sequence;
+  std::vector<std::pair<unsigned int, double>> _gate_sequence;
 };
 
 END_NAMESPACE_STIR

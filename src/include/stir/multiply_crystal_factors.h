@@ -22,7 +22,8 @@
 START_NAMESPACE_STIR
 
 class ProjData;
-template <int num_dimensions, typename elemT> class Array;
+template <int num_dimensions, typename elemT>
+class Array;
 
 /*!
   \ingroup projdata
@@ -39,6 +40,6 @@ template <int num_dimensions, typename elemT> class Array;
 
   This is useful for normalisation, but also for randoms from singles.
 */
-void multiply_crystal_factors(ProjData& proj_data, const Array<2,float>& efficiencies, const float global_factor);
+void multiply_crystal_factors(ProjData& proj_data, const Array<2, float>& efficiencies, const float global_factor);
 
 END_NAMESPACE_STIR

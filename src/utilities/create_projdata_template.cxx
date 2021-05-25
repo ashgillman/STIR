@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2004, Hammersmith Imanet Ltd
-    Copyright (C) 2014, University College London    
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -35,21 +35,18 @@
 using std::cerr;
 #endif
 
-
 USING_NAMESPACE_STIR
 
-int main(int argc, char *argv[])
-{ 
-  
-  if(argc!=2) 
-  {
-    cerr<<"Usage: " << argv[0] << " output_filename\n";
+int
+main(int argc, char* argv[]) {
+
+  if (argc != 2) {
+    cerr << "Usage: " << argv[0] << " output_filename\n";
     return EXIT_FAILURE;
   }
 
-
   shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ask_parameters());
-  
+
   const std::string output_file_name = argv[1];
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
   // TODO, Currently all stir::Scanner types are PET.
