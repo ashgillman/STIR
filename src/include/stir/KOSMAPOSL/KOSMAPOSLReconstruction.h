@@ -237,11 +237,12 @@ private:
 #  if 0
   /*! Compute for each voxel, jl, of the emission image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$ */
   /*! The information is stored in the image, kImage */
-//    void full_compute_kernelised_image(TargetT& kernelised_image_out,
-//                                     const TargetT& image_to_kernelise,
-//                                     const TargetT& current_alpha_estimate);
+  //    void full_compute_kernelised_image(TargetT& kernelised_image_out,
+  //                                     const TargetT& image_to_kernelise,
+  //                                     const TargetT& current_alpha_estimate);
 
-  /*! Similar to compute_kernelised_image() but this is the special case when the feature vectors contains only one non-zero element. */
+  /*! Similar to compute_kernelised_image() but this is the special case when the feature vectors contains only one non-zero
+   * element. */
   /*! The computation becomes faster because we do not need to create norm matrixes*/
 //    void compact_compute_kernelised_image(TargetT& kernelised_image_out,
 //                                        const TargetT& image_to_kernelise,

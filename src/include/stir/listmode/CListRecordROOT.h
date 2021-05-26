@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2015-2016 University of Leeds
     Copyright (C) 2016 UCL
+    Copyright (C) 2016-17, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0

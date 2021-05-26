@@ -61,8 +61,9 @@ CListEventCylindricalScannerWithDiscreteDetectors::get_bin(Bin& bin, const ProjD
   if (static_cast<ProjDataInfoCylindricalNoArcCorr const&>(proj_data_info).get_bin_for_det_pos_pair(bin, det_pos) ==
       Succeeded::no)
     bin.set_bin_value(0);
-  else
+  else {
     bin.set_bin_value(1);
+  }
 }
 
 bool

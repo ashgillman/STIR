@@ -15,6 +15,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 
@@ -30,6 +31,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/TimedObject.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include <boost/cstdint.hpp>
 //#include <map>
 #include <boost/unordered_map.hpp>
@@ -171,6 +173,8 @@ protected:
 
   bool cache_disabled;
   bool cache_stores_only_basic_bins;
+  //! If activated TOF reconstruction will be performed.
+  bool tof_enabled;
 
   /*! \brief The method that tries to get data from the cache.
 

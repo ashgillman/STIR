@@ -95,6 +95,7 @@ public:
     return (eventType == COINC_EVT) /* && eventTypeExt==COINC_COUNT_EVT)*/;
   } // TODO need to find out how to see if it's a coincidence event
 
+  inline int get_tof_bin() const { return static_cast<int>(deltaTime); }
 #if STIRIsNativeByteOrderBigEndian
   // Do byteswapping first before using this bit field.
   TODO
@@ -218,7 +219,7 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
 #if 0
   inline unsigned int get_gating() const
     { return gating_data.get_gating(); }
-  inline Succeeded set_gating(unsigned int g) 
+  inline Succeeded set_gating(unsigned int g)
     { return gating_data.set_gating(g); }
 #endif
   // event
@@ -228,7 +229,8 @@ dynamic_cast<CListRecordGEHDF5 const *>(&e2) != 0 &&
   virtual void get_detection_position(DetectionPositionPair<>& det_pos) const {
     det_pos.pos1().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.loXtalTransAxID;
     det_pos.pos1().axial_coord() = event_data.loXtalAxialID;
-    det_pos.pos2().tangential_coord() = scanner_sptr->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
+    det_pos.pos2().tangential_coord() =
+        this->uncompressed_proj_data_info_sptr->get_scanner_sptr()->get_num_detectors_per_ring() - 1 - event_data.hiXtalTransAxID;
     det_pos.pos2().axial_coord() = event_data.hiXtalAxialID;
   }
 

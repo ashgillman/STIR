@@ -4,8 +4,9 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, University College London
     Copyright (C) 2018, University of Leeds
+    Copyright (C) 2018, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -17,6 +18,7 @@
 
   \brief Implementation of non-inline functions of class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -49,6 +51,8 @@
 #else
 #  include <sstream>
 #endif
+#include "stir/info.h"
+#include "boost/foreach.hpp"
 #include "boost/format.hpp"
 
 #ifndef STIR_NO_NAMESPACES
@@ -139,6 +143,12 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v, const Vecto
   set_num_views(num_views_v);
   set_num_tangential_poss(num_tangential_poss_v);
   set_num_axial_poss_per_segment(num_axial_pos_per_segment_v);
+  // Initialise the TOF elements to non-used.
+  min_tof_pos_num = 0;
+  max_tof_pos_num = 0;
+  tof_increament_in_mm = 0.f;
+  tof_mash_factor = 0;
+  num_tof_bins = 1;
 }
 
 string
@@ -219,7 +229,7 @@ ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num, const bool ma
   if (make_num_tangential_poss_odd && (get_num_tangential_poss() % 2 == 0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
 
-  SegmentBySinogram<float> s(proj_data_info_sptr, segment_num);
+  SegmentBySinogram<float> s(proj_data_info_sptr, segment_num, timing_pos_num);
 
   return s;
 }
@@ -353,6 +363,7 @@ ProjDataInfo::construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr, 
 }
 
 // KT 28/06/2001 added arc_corrected flag
+// NE 28/12/2016 added the tof_mash_factor
 ProjDataInfo*
 ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner, const int max_delta, const int num_views,
                              const int num_tangential_poss, const bool arc_corrected)
@@ -459,7 +470,7 @@ ProjDataInfo::operator!=(const root_type& that) const {
 /*!
   \return
      \c true only if the types are the same, they are equal, or the range for the
-     segments, axial and tangential positions is at least as large.
+     TOF, segments, axial and tangential positions is at least as large.
 
   \warning Currently view ranges have to be identical.
 */
@@ -476,7 +487,10 @@ ProjDataInfo::operator>=(const ProjDataInfo& proj_data_info) const {
   if (proj_data_info.get_max_segment_num() > larger_proj_data_info.get_max_segment_num() ||
       proj_data_info.get_min_segment_num() < larger_proj_data_info.get_min_segment_num() ||
       proj_data_info.get_max_tangential_pos_num() > larger_proj_data_info.get_max_tangential_pos_num() ||
-      proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num())
+      proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num() ||
+      ((proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
+        proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num()) &&
+       (proj_data_info.is_tof_data() && larger_proj_data_info.is_tof_data())))
     return false;
 
   for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num();
@@ -494,6 +508,8 @@ ProjDataInfo::operator>=(const ProjDataInfo& proj_data_info) const {
   smaller_proj_data_info_sptr->reduce_segment_range(proj_data_info.get_min_segment_num(), proj_data_info.get_max_segment_num());
   smaller_proj_data_info_sptr->set_min_tangential_pos_num(proj_data_info.get_min_tangential_pos_num());
   smaller_proj_data_info_sptr->set_max_tangential_pos_num(proj_data_info.get_max_tangential_pos_num());
+  // smaller_proj_data_info_sptr->set_min_tof_pos_num(proj_data_info.get_min_tof_pos_num());
+  // smaller_proj_data_info_sptr->set_max_tof_pos_num(proj_data_info.get_max_tof_pos_num());
 
   for (int segment_num = proj_data_info.get_min_segment_num(); segment_num <= proj_data_info.get_max_segment_num();
        ++segment_num) {

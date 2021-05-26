@@ -15,6 +15,7 @@
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2017, University of Hull
     Copyright (C) 2019, National Physical Laboratory
     Copyright (C) 2019, 2021, University College of London
     This file is part of STIR.
@@ -207,6 +208,8 @@ public:
   virtual Succeeded set_up();
 
   //! This function does the actual work
+  //! N.E: In order to keep the ToF functions separate from the non-TOF
+  //! STIR this function just call the appropriate actual_process_data_with(out)_tof().
   virtual void process_data();
 
 protected:
@@ -255,7 +258,9 @@ protected:
   bool do_pre_normalisation;
   bool store_prompts;
   bool store_delayeds;
+
   int num_segments_in_memory;
+  int num_timing_poss_in_memory;
   long int num_events_to_store;
   int max_segment_num_to_process;
 

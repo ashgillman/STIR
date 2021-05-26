@@ -91,6 +91,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_defaults() {
   // num_views_to_add=1;
   this->proj_data_sptr.reset(); // MJ added
   this->zero_seg0_end_planes = 0;
+  this->use_tofsens = false;
 
   this->additive_projection_data_filename = "0";
   this->additive_proj_data_sptr.reset();
@@ -474,6 +475,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::set_up_before_se
   }
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_sptr()->clone());
+
 #if 0
   // KT 4/3/2017 disabled this. It isn't necessary and resolves modyfing the projectors in unexpected ways.
   proj_data_info_sptr->
@@ -571,29 +573,32 @@ sum_projection_data() const
   
   float counts=0.0F;
   
-  for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; segment_num++)
+  for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; ++segment_num)
   {
-    for (int view_num = proj_data_sptr->get_min_view_num();
-         view_num <= proj_data_sptr->get_max_view_num();
-         ++view_num)
-    {
-      
-      Viewgram<float>  viewgram=proj_data_sptr->get_viewgram(view_num,segment_num);
-      
-      //first adjust data
-      
-      // KT 05/07/2000 made parameters.zero_seg0_end_planes int
-      if(segment_num==0 && zero_seg0_end_planes!=0)
-      {
-        viewgram[viewgram.get_min_axial_pos_num()].fill(0);
-        viewgram[viewgram.get_max_axial_pos_num()].fill(0);
-      } 
-      
-      truncate_rim(viewgram,rim_truncation_sino);
-      
-      //now take totals
-      counts+=viewgram.sum();
-    }
+	  for (int timing_pos_num = -max_timing_pos_num_to_process; timing_pos_num <= max_timing_pos_num_to_process; ++timing_pos_num)
+	  {
+		for (int view_num = proj_data_sptr->get_min_view_num();
+			 view_num <= proj_data_sptr->get_max_view_num();
+			 ++view_num)
+		{
+
+		  Viewgram<float>  viewgram=proj_data_sptr->get_viewgram(view_num,segment_num,false,timing_pos_num);
+
+		  //first adjust data
+
+		  // KT 05/07/2000 made parameters.zero_seg0_end_planes int
+		  if(segment_num==0 && zero_seg0_end_planes!=0)
+		  {
+			viewgram[viewgram.get_min_axial_pos_num()].fill(0);
+			viewgram[viewgram.get_max_axial_pos_num()].fill(0);
+		  }
+
+		  truncate_rim(viewgram,rim_truncation_sino);
+
+		  //now take totals
+		  counts+=viewgram.sum();
+		}
+	  }
   }
   
   return counts;
@@ -651,30 +656,33 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
-  RelatedViewgrams<float> viewgrams = 
-    this->proj_data_sptr->get_empty_related_viewgrams(view_seg_nums,
-                                                      this->symmetries_sptr);
-  viewgrams.fill(1.F);
-  // find efficiencies
-  {      
-    const double start_frame = this->frame_defs.get_start_time(this->frame_num);
-    const double end_frame = this->frame_defs.get_end_time(this->frame_num);
-    this->normalisation_sptr->undo(viewgrams,start_frame,end_frame);
-  }
-  // backproject
-  {
-    const int range_to_zero =
-      view_seg_nums.segment_num() == 0 && this->zero_seg0_end_planes
-      ? 1 : 0;
-    const int min_ax_pos_num = 
-      viewgrams.get_min_axial_pos_num() + range_to_zero;
-    const int max_ax_pos_num = 
-       viewgrams.get_max_axial_pos_num() - range_to_zero;
+	int min_timing_pos_num = use_tofsens ? -this->max_timing_pos_num_to_process : 0;
+	int max_timing_pos_num = use_tofsens ? this->max_timing_pos_num_to_process : 0;
+	for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
+	{
+		RelatedViewgrams<float> viewgrams =
+			this->proj_data_sptr->get_empty_related_viewgrams(view_seg_nums,
+				this->symmetries_sptr, false, timing_pos_num);
+		viewgrams.fill(1.F);
+		// find efficiencies
+		{
+			const double start_frame = this->frame_defs.get_start_time(this->frame_num);
+			const double end_frame = this->frame_defs.get_end_time(this->frame_num);
+			this->normalisation_sptr->undo(viewgrams, start_frame, end_frame);
+		}
+		// backproject
+		{
+			const int range_to_zero =
+				view_seg_nums.segment_num() == 0 && this->zero_seg0_end_planes
+				? 1 : 0;
+			const int min_ax_pos_num =
+				viewgrams.get_min_axial_pos_num() + range_to_zero;
+			const int max_ax_pos_num =
+				viewgrams.get_max_axial_pos_num() - range_to_zero;
 
-    this->projector_pair_ptr->get_back_projector_sptr()->
-      back_project(sensitivity, viewgrams,
-                   min_ax_pos_num, max_ax_pos_num);
-  }
+			this->sens_backprojector_sptr->back_project(sensitivity, viewgrams, min_ax_pos_num, max_ax_pos_num);
+		}
+	}
   
 }
 #endif

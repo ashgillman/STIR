@@ -6,9 +6,11 @@
   \ingroup projdata
   \brief Implementation of inline methods of class stir::DetectionPositionPair
   \author Kris Thielemans
+  \author Elise Emond
 */
 /*
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
+    Copyright 2017, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0

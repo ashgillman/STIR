@@ -3,6 +3,7 @@
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, University College London
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -15,6 +16,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataInfoCylindrical
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Berta Marti Fuster
@@ -24,6 +26,7 @@
 #define __stir_ProjDataInfoCylindrical_H__
 
 #include "stir/ProjDataInfo.h"
+#include "stir/CartesianCoordinate3D.h"
 #include <utility>
 #include <vector>
 

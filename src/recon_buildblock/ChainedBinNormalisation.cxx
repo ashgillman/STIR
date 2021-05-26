@@ -76,8 +76,7 @@ ChainedBinNormalisation::apply(RelatedViewgrams<float>& viewgrams) const {
 }
 #if 0
 void
-ChainedBinNormalisation::apply(ProjData& proj_data) const
-{
+ChainedBinNormalisation::apply(ProjData& proj_data) const {
   if (!is_null_ptr(apply_first))
     apply_first->apply(proj_data);
   if (!is_null_ptr(apply_second))

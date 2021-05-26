@@ -241,11 +241,39 @@ MatrixTests::run_tests_max_eigenvector() {
 }
 }
 
-END_NAMESPACE_STIR
+{
+  const float pi2 = static_cast<float>(_PI / 2);
+  const Array<2, float> rotation =
+      //      make_orthogonal_matrix(.2F,.4F,-1.F);
+      make_orthogonal_matrix(pi2, pi2, pi2);
+  std::cerr << rotation;
+  check_if_equal(matrix_multiply(rotation, matrix_transpose(rotation)), diagonal_matrix(3, 1.F),
+                 "construct orthogonal matrix O.O^t");
+  check_if_equal(matrix_multiply(matrix_transpose(rotation), rotation), diagonal_matrix(3, 1.F),
+                 "construct orthogonal matrix O^t.O");
 
-int
-main() {
-  stir::MatrixTests tests;
-  tests.run_tests();
-  return tests.main_return_value();
-}
+  const Array<2, float> d = diagonal_matrix(Coordinate3D<float>(3.F, 4.F, -2.F));
+
+  const Array<2, float> m = matrix_multiply(rotation, matrix_multiply(d, matrix_transpose(rotation)));
+  Array<1, float> the_max_eigenvector = matrix_multiply(rotation, make_1d_array(0.F, 1.F, 0.F));
+  the_max_eigenvector /= (*abs_max_element(the_max_eigenvector.begin(), the_max_eigenvector.end()));
+
+  // now repetition of tests with diagonal matrix
+  Succeeded success =
+      absolute_max_eigenvector_using_power_method(max_eigenvalue, max_eigenvector, m, make_1d_array(1.F, 2.F, 3.F),
+                                                  /*tolerance=*/.001, 1000UL);
+  check(success == Succeeded::yes, "abs_max_using_power: succeeded (float non-diagonal matrix)");
+
+  check_if_equal(max_eigenvalue, 4.F, "abs_max_using_power: eigenvalue (float non-diagonal matrix)");
+  check_if_equal(max_eigenvector, the_max_eigenvector, "abs_max_using_power: eigenvector (float non-diagonal matrix)");
+  success = absolute_max_eigenvector_using_shifted_power_method(
+      max_eigenvalue, max_eigenvector, m, make_1d_array(1.F, 2.F, 3.F),
+      .5F, // note: shift should be small enough that it doesn't make the most negative eigenvalue 'larger'
+      /*tolerance=*/.001, 1000UL);
+  check(success == Succeeded::yes, "abs_max_using_shifted_power: succeeded (float non-diagonal matrix)");
+
+  int main() {
+    stir::MatrixTests tests;
+    tests.run_tests();
+    return tests.main_return_value();
+  }

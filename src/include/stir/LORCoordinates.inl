@@ -104,6 +104,8 @@ LORInCylinderCoordinates<coordT>::LORInCylinderCoordinates(const LORInAxialAndNo
   _p2.z() = na_coords.z2();
   _p1.psi() = to_0_2pi(na_coords.phi() + na_coords.beta());
   _p2.psi() = to_0_2pi(na_coords.phi() - na_coords.beta() + static_cast<coordT>(_PI));
+  if (na_coords.is_swapped())
+    std::swap(_p1, _p2);
   check_state();
 }
 
@@ -114,6 +116,8 @@ LORInCylinderCoordinates<coordT>::LORInCylinderCoordinates(const LORInAxialAndSi
   _p2.z() = coords.z2();
   _p1.psi() = to_0_2pi(coords.phi() + coords.beta());
   _p2.psi() = to_0_2pi(coords.phi() - coords.beta() + static_cast<coordT>(_PI));
+  if (coords.is_swapped())
+    std::swap(_p1, _p2);
   check_state();
 }
 

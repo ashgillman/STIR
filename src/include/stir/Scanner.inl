@@ -296,7 +296,10 @@ Scanner::set_reference_energy(const float new_num) {
   reference_energy = new_num;
 }
 
-/********    Calculate singles bin index from detection position    *********/
+void
+Scanner::set_num_max_of_timing_poss(const int new_num) {
+  max_num_of_timing_poss = new_num;
+}
 
 int
 Scanner::get_singles_bin_index(int axial_index, int transaxial_index) const {

@@ -1,7 +1,9 @@
 /*
     Copyright (C) 2002 - 2005-06-09, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2020, University College London
+    Copyright (C) 2013, 2020 University College London
+    Copyright (C) 2016, University of Hull
+
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -22,6 +24,7 @@
   Add one or more options to print the exam/geometric/min/max/sum information.
   If no option is specified, geometric info is printed.
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 

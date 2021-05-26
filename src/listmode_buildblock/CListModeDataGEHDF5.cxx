@@ -19,6 +19,7 @@
 #include "stir/listmode/CListModeDataGEHDF5.h"
 #include "stir/Succeeded.h"
 #include "stir/ExamInfo.h"
+#include "stir/ProjDataInfo.h"
 #include "stir/info.h"
 #include "stir/is_null_ptr.h"
 #include "stir/IO/GEHDF5Wrapper.h"

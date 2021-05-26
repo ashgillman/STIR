@@ -133,19 +133,20 @@ send_bool_value(bool value, int tag, int destination) {
     t.start();
   }
 #endif
+}
 
-  if (destination == -1 || tag == -1)
-    MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  else
-    MPI_Send(&i, 1, MPI_INT, destination, tag, MPI_COMM_WORLD);
+if (destination == -1 || tag == -1)
+  MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
+else
+  MPI_Send(&i, 1, MPI_INT, destination, tag, MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave: sending bool value took " << t.value() << " seconds" << std::endl;
+if (test_send_receive_times)
+  t.stop();
+if (test_send_receive_times && t.value() > min_threshold)
+  std::cout << "Master/Slave: sending bool value took " << t.value() << " seconds" << std::endl;
 #endif
-}
+} // namespace distributed
 
 void
 send_int_values(int* values, int count, int tag, int destination) {

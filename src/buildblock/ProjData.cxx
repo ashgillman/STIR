@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2015, 2020 University College London
     This file is part of STIR.
 
@@ -15,6 +16,7 @@
 
   \brief Implementations for non-inline functions of class stir::ProjData
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author PARAPET project
 */
@@ -281,8 +283,7 @@ ProjData::get_segment_by_sinogram(const int segment_num) const {
   SegmentBySinogram<float> segment = proj_data_info_sptr->get_empty_segment_by_sinogram(segment_num, false);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-    segment.set_viewgram(get_viewgram(view_num, segment_num, false));
-
+    segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_pos));
   return segment;
 }
 
@@ -291,8 +292,7 @@ ProjData::get_segment_by_view(const int segment_num) const {
   SegmentByView<float> segment = proj_data_info_sptr->get_empty_segment_by_view(segment_num, false);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-    segment.set_viewgram(get_viewgram(view_num, segment_num, false));
-
+    segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_pos));
   return segment;
 }
 

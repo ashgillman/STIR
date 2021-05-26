@@ -19,6 +19,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -108,6 +109,8 @@ public:
   inline Bin get_bin() const;
   //! and set the bin coordinates
   inline void set_bin(const Bin&);
+  //! get a ref to the bin
+  inline Bin* get_bin_ptr();
 
   //! functions for allowing iterator access
   inline iterator begin();

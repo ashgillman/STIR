@@ -6,9 +6,11 @@
   \ingroup projdata
   \brief Declaration of class stir::DetectionPositionPair
   \author Kris Thielemans
+  \author Elise Emond
 */
 /*
     Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
+    Copyright 2017, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -40,6 +42,7 @@ public:
   inline const DetectionPosition<coordT>& pos2() const;
   inline DetectionPosition<coordT>& pos1();
   inline DetectionPosition<coordT>& pos2();
+  inline int& timing_pos();
   //! comparison operators
   inline bool operator==(const DetectionPositionPair&) const;
   inline bool operator!=(const DetectionPositionPair&) const;

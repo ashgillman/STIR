@@ -304,40 +304,41 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
       else
         filter[ii++] = 0.F;
     }
-
-    for (k = int(-0.5 * width) + 1; k <= -1; k++) {
-      fa = (float)k / width;
-      nu_a = fa / d_a;
-      omega = atan2(-nu_b, -nu_a);
-      psi = acos(sin(omega) * sin(gamma));
-
-      mod_nu = sqrt(nu_a * nu_a + nu_b * nu_b);
-
-      if (cos(psi) >= cos(theta_max))
-        fil = mod_nu / 2. / _PI;
-      else
-        fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
-
-      if (-fa < fc_planar && -fb < fc_axial)
-        filter[ii++] = static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar)) *
-                                          (alpha_axial + (1. - alpha_axial) * cos(_PI * (-fb) / fc_axial)));
-      else
-        filter[ii++] = 0.F;
-    }
   }
 
-  // KT&Darren Hogg 03/07/2001 inserted correct scale factor
-  // TODO this assumes current value for the magic_number in backprojector
-  filter *= static_cast<float>(4 * _PI * d_a);
+  for (k = int(-0.5 * width) + 1; k <= -1; k++) {
+    fa = (float)k / width;
+    nu_a = fa / d_a;
+    omega = atan2(-nu_b, -nu_a);
+    psi = acos(sin(omega) * sin(gamma));
+
+    mod_nu = sqrt(nu_a * nu_a + nu_b * nu_b);
+
+    if (cos(psi) >= cos(theta_max))
+      fil = mod_nu / 2. / _PI;
+    else
+      fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
+
+    if (-fa < fc_planar && -fb < fc_axial)
+      filter[ii++] = static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar)) *
+                                        (alpha_axial + (1. - alpha_axial) * cos(_PI * (-fb) / fc_axial)));
+    else
+      filter[ii++] = 0.F;
+  }
+}
+
+// KT&Darren Hogg 03/07/2001 inserted correct scale factor
+// TODO this assumes current value for the magic_number in backprojector
+filter *= static_cast<float>(4 * _PI * d_a);
 
 #  ifdef __DEBUG_COLSHER
-  {
-    char file[200];
-    sprintf(file, "%s_%d_%d_%g.dat", "old_colsher", width, height, _PI / 2 - gamma);
-    std::cout << "Saving filter : " << file << std::endl;
-    std::ofstream s(file);
-    write_data(s, filter);
-  }
+{
+  char file[200];
+  sprintf(file, "%s_%d_%d_%g.dat", "old_colsher", width, height, _PI / 2 - gamma);
+  std::cout << "Saving filter : " << file << std::endl;
+  std::ofstream s(file);
+  write_data(s, filter);
+}
 #  endif
 }
 

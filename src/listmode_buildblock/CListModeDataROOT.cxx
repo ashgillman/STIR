@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2015, 2016 University of Leeds
+    Copyright (C) 2017, 2018 University of Hull
     Copyright (C) 2016, 2017, 2020 University College London
     Copyright (C) 2018 University of Hull
     This file is part of STIR.

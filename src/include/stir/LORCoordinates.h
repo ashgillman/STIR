@@ -46,6 +46,10 @@ class LORAs2Points;
   a line in several ways, each if which is more convenient for some
   application. This class provides a common base for all of these.
 
+  Note that we take direction of the line into account (since after STIR 3.0). This is
+  necessary for TOF support for instance. This is currently done by providing the is_swapped()
+  member.
+
   \warning This is all preliminary and likely to change.
 */
 template <class coordT>
@@ -492,6 +496,7 @@ public:
 private:
   coordT _phi;
   coordT _beta;
+  bool _swapped;
 };
 
 /*! \ingroup LOR

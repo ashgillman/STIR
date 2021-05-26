@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -14,6 +15,7 @@
   \ingroup GeneralisedObjectiveFunction
   \brief Declaration of class stir::GeneralisedObjectiveFunction
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
 

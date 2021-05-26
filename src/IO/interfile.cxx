@@ -1011,6 +1011,9 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
   }
 
   // it's PET data if we get here
+  // N.E. Added timing locations
+  pdfs.get_proj_data_info_sptr()->get_num_tof_poss() > 1 ? output_header << "number of dimensions := 5\n"
+                                                         : output_header << "number of dimensions := 4\n";
 
   output_header << "number of dimensions := 4\n";
 

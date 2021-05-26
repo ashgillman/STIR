@@ -842,6 +842,10 @@ make_fan_data(FanProjData& fan_data, const ProjData& proj_data) {
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
+
+  if (proj_data.get_proj_data_info_sptr()->is_tof_data())
+    error("make_fan_data: Incompatible with TOF data. Abort.");
+
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
       get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
 
@@ -938,6 +942,10 @@ set_fan_data(ProjData& proj_data, const FanProjData& fan_data) {
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
+
+  if (proj_data.get_proj_data_info_sptr()->is_tof_data())
+    error("make_fan_data: Incompatible with TOF data. Abort.");
+
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
       get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
 
@@ -1194,6 +1202,10 @@ make_fan_sum_data(Array<2, float>& data_fan_sums, const ProjData& proj_data) {
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
+
+  if (proj_data.get_proj_data_info_sptr()->is_tof_data())
+    error("make_fan_data: Incompatible with TOF data. Abort.");
+
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
       get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
   const int half_fan_size = fan_size / 2;

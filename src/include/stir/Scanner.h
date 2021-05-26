@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2016, 2019, UCL
     Copyright (C 2017-2018, University of Leeds
 
@@ -18,6 +19,7 @@
 
   \brief Declaration of class stir::Scanner
 
+  \author Nikos Efthimiou
   \author Claire Labbe
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -78,6 +80,11 @@ class Succeeded;
       but provide extra members to find out how many of these virtual crystals there are.
 
       \warning This information is only sensible for discrete detector-based scanners.
+      \warning Currently, in a TOF compatible scanner template, the last three types have to
+                be explicitly defined to avoid ambiguity.
+      \warning The energy resolution has to be specified but it is used only for scatter correction.
+      \warning In order to define a nonTOF scanner the timing resolution has to be set to 0 or 1.
+                Anything else will trigger a TOF reconstruction.
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
 
@@ -197,6 +204,7 @@ public:
   inline Type get_type() const;
   //! checks consistency
   /*! Calls warning() with diagnostics when there are problems
+   * N.E: Should something check be added for TOF information?
    */
   Succeeded check_consistency() const;
 
@@ -281,6 +289,12 @@ public:
   inline int get_num_transaxial_singles_units() const;
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
+  //! Get the maximum number of TOF bins.
+  inline int get_max_num_timing_poss() const;
+  //! Get the delta t which correspnds to the max number of TOF bins in picosecs.
+  inline float get_size_of_timing_pos() const;
+  //! Get the timing resolution of the scanner.
+  inline float get_timing_resolution() const;
 
   //! \name number of "fake" crystals per block, inserted by the scanner
   /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
@@ -357,6 +371,13 @@ public:
   //! set the reference energy of the energy resolution
   //! A negative value indicates, unknown || not set
   inline void set_reference_energy(const float new_num);
+  //! Set the maximum number of TOF bins.
+  inline void set_num_max_of_timing_poss(int new_num);
+  //! Set the delta t which correspnds to the max number of TOF bins.
+  inline void set_size_of_timing_poss(float new_num);
+  //! Set timing resolution
+  inline void set_timing_resolution(float new_num_in_ps);
+  //@} (end of set info)
 
   inline bool has_energy_information() const;
   //@} (end of set info)
@@ -369,10 +390,10 @@ public:
   // a detection position.
   inline int get_singles_bin_index(const DetectionPosition<>& det_pos) const;
 
-  // Get the axial singles bin coordinate from a singles bin.
+  //! Get the axial singles bin coordinate from a singles bin.
   inline int get_axial_singles_unit(int singles_bin_index) const;
 
-  // Get the transaxial singles bin coordinate from a singles bin.
+  //! Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
 
 private:
@@ -405,11 +426,7 @@ private:
   //! A negative value indicates, unknown.
   //! This value is dominated by the material of the scintilation crystal
   float energy_resolution;
-
-  //!
-  //! \brief reference_energy
-  //! \author Nikos Efthimiou
-  //! \details In PET application this should always be 511 keV.
+  //! In PET application this should always be 511 keV.
   //! A negative value indicates, unknown.
   float reference_energy;
 

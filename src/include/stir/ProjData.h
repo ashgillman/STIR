@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2016, 2017, University of Hull
     Copyright (C) 2013, 2015-2017, 2020, University College London
     This file is part of STIR.
 
@@ -13,6 +14,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjData
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -28,6 +30,7 @@
 #include "stir/Succeeded.h"
 #include "stir/SegmentBySinogram.h"
 #include "stir/SegmentByView.h"
+
 //#include <ios>
 
 #include "stir/ExamData.h"
@@ -65,6 +68,8 @@ class Succeeded;
   <li> \c tangential_pos_num : indexes different positions in a direction
         tangential to the scanner cylinder.
         (sometimes called 'bin' or 'element')
+  <li> \c timing_pos_num : indexes different positions in the LOR, based on
+        the photon detection time difference.
   </ul>
 
   The number of axial positions is allowed to depend on segment_num.
@@ -243,6 +248,12 @@ public:
   inline int get_num_tangential_poss() const;
   //! Get number of TOF positions
   inline int get_num_tof_poss() const;
+  //! Get the index of the first timing position
+  inline int get_min_tof_pos_num() const;
+  //! Get the index of the last timgin position.
+  inline int get_max_tof_pos_num() const;
+  //! Get TOG mash factor
+  inline int get_tof_mash_factor() const;
   //! Get minimum segment number
   inline int get_min_segment_num() const;
   //! Get maximum segment number
@@ -260,6 +271,9 @@ public:
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
   //! Get the total number of sinograms
+  /*! Note that this will count TOF sinograms as well.
+      \see get_num_non_tof_sinograms()
+  */
   inline int get_num_sinograms() const;
   //! Get the number of non-tof sinograms
   /*! Note that this is the sum of the number of axial poss over all segments.

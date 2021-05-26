@@ -162,6 +162,8 @@ zoom_viewgram(Viewgram<float>& out_view, const Viewgram<float>& in_view, const f
   assert(in_view.get_view_num() == out_view.get_view_num());
   assert(in_view.get_proj_data_info_sptr()->get_num_segments() == out_view.get_proj_data_info_sptr()->get_num_segments());
   assert(in_view.get_segment_num() == out_view.get_segment_num());
+  assert(in_view.get_proj_data_info_sptr()->get_num_tof_poss() == out_view.get_proj_data_info_sptr()->get_num_tof_poss());
+  assert(in_view.get_timing_pos_num() == out_view.get_timing_pos_num());
   assert(in_view.get_min_axial_pos_num() == out_view.get_min_axial_pos_num());
   assert(in_view.get_max_axial_pos_num() == out_view.get_max_axial_pos_num());
 

@@ -13,6 +13,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 
@@ -103,6 +104,13 @@ ProjMatrixByBin::set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_spt
   const int max_view_num = proj_data_info_sptr->get_max_view_num();
   const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
   const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
+
+  if (proj_data_info_sptr->is_tof_data())
+    enable_tof(proj_data_info_sptr, true);
+  else {
+    tof_enabled = false;
+    this->proj_data_info_sptr = proj_data_info_sptr;
+  }
 
   this->cache_collection.recycle();
   this->cache_collection.resize(min_view_num, max_view_num);

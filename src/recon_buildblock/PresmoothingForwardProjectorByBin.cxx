@@ -72,6 +72,15 @@ const DataSymmetriesForViewSegmentNumbers*
 PresmoothingForwardProjectorByBin::get_symmetries_used() const {
   return original_forward_projector_ptr->get_symmetries_used();
 }
+
+// void PresmoothingForwardProjectorByBin::
+// update_filtered_density_image(const DiscretisedDensity<3,float>& density)
+//{
+////        filtered_density_sptr.reset(density.get_empty_discretised_density());
+////    image_processor_ptr->apply(*filtered_density_sptr, density);
+////    assert(density.get_index_range() == filtered_density_sptr->get_index_range());
+//}
+
 #ifdef STIR_PROJECTORS_AS_V3
 void
 PresmoothingForwardProjectorByBin::actual_forward_project(RelatedViewgrams<float>& viewgrams,
@@ -98,5 +107,6 @@ PresmoothingForwardProjectorByBin::actual_forward_project(RelatedViewgrams<float
   original_forward_projector_ptr->forward_project(viewgrams, min_axial_pos_num, max_axial_pos_num, min_tangential_pos_num,
                                                   max_tangential_pos_num);
 }
+#endif
 
 END_NAMESPACE_STIR

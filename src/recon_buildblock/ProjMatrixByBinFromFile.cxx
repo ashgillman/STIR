@@ -176,6 +176,11 @@ ProjMatrixByBinFromFile::set_up(const shared_ptr<const ProjDataInfo>& proj_data_
     error("Something wrong reading the matrix from file. Exiting.");
 }
 
+ProjMatrixByBinFromFile*
+ProjMatrixByBinFromFile::clone() const {
+  return new ProjMatrixByBinFromFile(*this);
+}
+
 // anonymous namespace for local functions
 namespace {
 

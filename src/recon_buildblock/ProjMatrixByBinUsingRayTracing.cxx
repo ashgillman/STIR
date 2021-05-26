@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013-2014, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -15,6 +16,7 @@
 
   \brief non-inline implementations for stir::ProjMatrixByBinUsingRayTracing
 
+  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -215,7 +217,7 @@ ProjMatrixByBinUsingRayTracing::set_up(
   proj_data_info_ptr = proj_data_info_ptr_v;
   const VoxelsOnCartesianGrid<float>* image_info_ptr = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(density_info_ptr.get());
 
-  if (image_info_ptr == NULL)
+  if (is_null_ptr(image_info_sptr))
     error("ProjMatrixByBinUsingRayTracing initialised with a wrong type of DiscretisedDensity\n");
 
   voxel_size = image_info_ptr->get_voxel_size();
@@ -441,7 +443,7 @@ ProjMatrixByBinUsingRayTracing::calculate_proj_matrix_elems_for_one_bin(ProjMatr
   assert(lor.size() == 0);
 
   float phi;
-  float s_in_mm = proj_data_info_ptr->get_s(bin);
+  float s_in_mm = proj_data_info_sptr->get_s(bin);
   /* Implementation note.
      KT initialised s_in_mm above instead of in the if because this meant
      that gcc 3.0.1 generated identical results to the previous version of this file.

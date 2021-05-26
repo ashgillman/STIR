@@ -28,6 +28,8 @@
 #include "stir/RegisteredObject.h"
 #include "stir/TimedObject.h"
 #include "stir/shared_ptr.h"
+#include "stir/Bin.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 
 START_NAMESPACE_STIR
 

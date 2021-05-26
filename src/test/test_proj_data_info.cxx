@@ -47,6 +47,8 @@ using std::max;
 using std::size_t;
 #endif
 
+//#define STIR_TOF_DEBUG 1
+
 START_NAMESPACE_STIR
 
 static inline int
@@ -729,7 +731,7 @@ ProjDataInfoCylindricalNoArcCorrTests::test_proj_data_info(ProjDataInfoCylindric
   {
     cerr << "\n\tTest code for bins <-> detectors routines that work with any mashing and axial compression";
 
-    Bin bin;
+    Bin bin(0, 0, 0, 0, 0, 0.0f);
     // set value for comparison later on
     bin.set_bin_value(0);
     std::vector<DetectionPositionPair<>> det_pos_pairs;
@@ -817,12 +819,14 @@ int
 main() {
   set_default_num_threads();
 
+#ifndef STIR_TOF_DEBUG // disable for speed of testing
   {
     ProjDataInfoCylindricalArcCorrTests tests;
     tests.run_tests();
     if (!tests.is_everything_ok())
       return tests.main_return_value();
   }
+#endif
   {
     ProjDataInfoCylindricalNoArcCorrTests tests1;
     tests1.run_tests();

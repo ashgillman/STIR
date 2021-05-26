@@ -276,9 +276,41 @@ CorrectProjDataApplication::run() const {
             normalisation_ptr->undo(viewgrams,start_frame,end_frame);
           }
         }
-      }
-      else
-#endif
+
+        if (do_scatter && !apply_or_undo_correction) {
+          viewgrams += scatter_projdata_ptr->get_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+        }
+
+        if (do_randoms && apply_or_undo_correction) {
+          viewgrams -= randoms_projdata_ptr->get_related_viewgrams(view_seg_nums, symmetries_ptr, false, timing_pos_num);
+        }
+#  if 0
+		  if (frame_num==-1)
+		  {
+		int num_frames = frame_def.get_num_frames();
+		for ( int i = 1; i<=num_frames; i++)
+		{ 
+		  //cerr << "Doing frame  " << i << endl; 
+		  const double start_frame = frame_def.get_start_time(i);
+		  const double end_frame = frame_def.get_end_time(i);
+		  //cerr << "Start time " << start_frame << endl;
+		  //cerr << " End time " << end_frame << endl;
+		  // ** normalisation **
+		  if (apply_or_undo_correction)
+		  {
+			normalisation_ptr->apply(viewgrams,start_frame,end_frame);
+		  }
+		  else
+		  {
+			normalisation_ptr->undo(viewgrams,start_frame,end_frame);
+		  }
+		}
+		  }
+
+
+
+		  else
+#  endif
       {
         const double start_frame = frame_defs.get_start_time(frame_num);
         const double end_frame = frame_defs.get_end_time(frame_num);
@@ -337,12 +369,12 @@ CorrectProjDataApplication::set_defaults() {
   frame_num = 1;
   frame_definition_filename = "";
 
-#ifndef USE_PMRT
+#  ifndef USE_PMRT
   forward_projector_ptr.reset(new ForwardProjectorByBinUsingRayTracing);
-#else
+#  else
   shared_ptr<ProjMatrixByBin> PM(new ProjMatrixByBinUsingRayTracing);
   forward_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
-#endif
+#  endif
 
   do_arc_correction = false;
 }
@@ -424,7 +456,7 @@ CorrectProjDataApplication::set_up() {
 
   // construct output_projdata
   {
-#if 0
+#  if 0
     // attempt to do mult-frame data, but then we should have different input data anyway
     if (frame_definition_filename.size()!=0 && frame_num==-1)
     {
@@ -439,17 +471,17 @@ CorrectProjDataApplication::set_up() {
         }
     }
     else
-#endif
+#  endif
     {
       string output_filename_with_ext = output_filename;
-#if 0
+#  if 0
       if (frame_definition_filename.size()!=0)
         {
           char ext[50];
           sprintf(ext, "_f%dg1b0d0", frame_num);
           output_filename_with_ext += ext;
         }
-#endif
+#  endif
       output_projdata_ptr.reset(
           new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), output_proj_data_info_sptr, output_filename_with_ext));
     } // output_projdata block

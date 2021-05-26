@@ -23,6 +23,11 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
+#include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
+#include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/is_null_ptr.h"
 #include <boost/format.hpp>
 
 START_NAMESPACE_STIR

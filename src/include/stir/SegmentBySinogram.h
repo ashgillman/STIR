@@ -68,7 +68,7 @@ public:
   inline int get_num_axial_poss() const;
   //! Get number of views
   inline int get_num_views() const;
-  //! Get number of tangetial positions
+  //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
   //! Get minimum axial position number
   inline int get_min_axial_pos_num() const;

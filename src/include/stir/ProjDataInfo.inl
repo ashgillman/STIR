@@ -4,7 +4,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2016, 2020, University College London
+    Copyright (C) 2016, University of Hull
+    Copyright (C) 2016, 2017, 2020, University College London
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -15,14 +16,22 @@
   \ingroup projdata
   \brief Implementations of inline functions for class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Elise Emond
   \author Nikos Efthimiou
   \author PARAPET project
 
 */
 
+#include "boost/format.hpp"
+
 START_NAMESPACE_STIR
+double
+ProjDataInfo::mm_to_tof_delta_time(const float dist) {
+  return dist / _c_light_div2;
+}
 
 shared_ptr<ProjDataInfo>
 ProjDataInfo::create_shared_clone() const {

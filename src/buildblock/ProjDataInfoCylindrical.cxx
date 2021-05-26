@@ -17,6 +17,7 @@
 
   \brief Non-inline implementations of stir::ProjDataInfoCylindrical
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project

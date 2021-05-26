@@ -182,4 +182,23 @@ ForwardProjectorByBinUsingProjMatrixByBin::actual_forward_project(RelatedViewgra
   }
 }
 
+#if 0 // disabled as currently not used. needs to be written in the new style anyway
+void
+ForwardProjectorByBinUsingProjMatrixByBin::
+ actual_forward_project(Bin& this_bin,
+                        const DiscretisedDensity<3, float> &density)
+{
+  // KT does not understand this `if` statement. The cache has nothing to do with symmetries etc.
+    if (proj_matrix_ptr->is_cache_enabled())
+    {
+        ProjMatrixElemsForOneBin proj_matrix_row;
+
+        proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, this_bin);
+        proj_matrix_row.forward_project(this_bin,density);
+    }
+    else
+        error("ForwardProjectorByBinUsingProjMatrixByBin: Symmetries should be handled by ProjMatrix. Abort. ");
+}
+#endif
+
 END_NAMESPACE_STIR

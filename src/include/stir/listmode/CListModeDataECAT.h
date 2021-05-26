@@ -71,6 +71,8 @@ public:
   /*! \todo this might depend on the acquisition parameters */
   virtual bool has_delayeds() const { return true; }
 
+  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
+
 private:
   std::string listmode_filename_prefix;
   mutable unsigned int current_lm_file;

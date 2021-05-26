@@ -155,8 +155,7 @@ Scanner::Scanner(Type scanner_type) {
                13 + 1, 13 + 1, 0, 0, 1); // TODO bucket/singles info?
     // Transaxial blocks have 13 physical crystals and a gap at the
     // 14th crystal where the counts are zero.
-    // There are 39 rings with 13 axial crystals per block. Two virtual
-    // rings are added, but contain counts after applying axial compression.
+    // There are 39 rings with 13 axial crystals per block.
     break;
 
   case Siemens_mMR:
@@ -176,7 +175,6 @@ Scanner::Scanner(Type scanner_type) {
                55, 400, (13 + 1) * 48, 421.0F, 7.0F, 4.054F, 2.005F, 0.0F, 4, 1, 13 + 1, 13 + 1, 0, 0,
                1); // TODO singles info incorrect
     // energy: 435-650
-    // 13 TOF bins
     break;
 
   case RPT:
@@ -319,7 +317,9 @@ Scanner::Scanner(Type scanner_type) {
                static_cast<float>(-4.399 * _PI / 180), // TODO check sign
                3, 4, 9, 4, 1, 1, 1,
                0.0944F, // energy resolution from Hsu et al. 2017
-               511.F);
+               511.F, (short int)(0),
+               (float)(0), // TODO
+               (float)(0));
     break;
 
   case DiscoveryMI4ring: // This is the 4-ring DMI
@@ -339,7 +339,9 @@ Scanner::Scanner(Type scanner_type) {
                static_cast<float>(-4.399 * _PI / 180), // TODO check sign
                4, 4, 9, 4, 1, 1, 1,
                0.0944F, // energy resolution from Hsu et al. 2017
-               511.F);
+               511.F, (short int)(0),
+               (float)(0), // TODO
+               (float)(0));
     break;
 
   case HZLR:
@@ -702,6 +704,12 @@ Scanner::parameter_info() const {
   if (get_energy_resolution() >= 0 && get_reference_energy() >= 0) {
     s << "Energy resolution := " << get_energy_resolution() << '\n';
     s << "Reference energy (in keV) := " << get_reference_energy() << '\n';
+  }
+
+  if (is_tof_ready()) {
+    s << "Number of TOF time bins :=" << get_max_num_timing_poss() << "\n";
+    s << "Size of timing bin (ps) :=" << get_size_of_timing_pos() << "\n";
+    s << "Timing resolution (ps) :=" << get_timing_resolution() << "\n";
   }
 
   // block/bucket description

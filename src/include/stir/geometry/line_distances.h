@@ -6,10 +6,12 @@
   \ingroup geometry
   \brief  A few functions to compute distances between lines etc
   \todo move implementations to .cxx
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 /*
     Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 

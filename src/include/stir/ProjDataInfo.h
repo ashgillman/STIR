@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016-17, University of Hull
     Copyright (C) 2017-2018, 2020, University College London
     This file is part of STIR.
 
@@ -16,8 +17,10 @@
 
   \brief Declaration of class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Elise Emond
   \author PARAPET project
 
 */
@@ -88,6 +91,9 @@ public:
   Siemens/CTI currently uses odd span. GE scanners use a mixed case where segment 0
   has span 3, while other segments have span 2. We call this span 2.
   As a generalisation, this function supports any even span.
+
+         \warning N.E: TOF mash factor = 1, means possible many TOF bins
+     \warning N.E: TOF mash factor = 0 will produce nonTOF data
   */
   static unique_ptr<ProjDataInfo> construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr, const int span,
                                                            const int max_delta, const int num_views,
@@ -112,6 +118,9 @@ public:
 
   //! Like clone() but return a shared_ptr
   inline shared_ptr<ProjDataInfo> create_shared_clone() const;
+
+  //! Similar to create_shared_clone() but returns a non-tof version of ProjDataInfo setting tof mashing factor = 0
+  inline shared_ptr<ProjDataInfo> create_non_tof_clone() const;
 
   //! Destructor
   virtual ~ProjDataInfo() {}
@@ -161,6 +170,8 @@ public:
   //! Set maximum tangential position number
   /*! This function is virtual in case a derived class needs to know the number changed. */
   virtual void set_max_tangential_pos_num(const int max_tang_poss);
+  //! The the tof mashing factor. Min and Max timing position will be recalculated.
+  virtual void set_tof_mash_factor(const int new_num);
   //@}
 
   //! \name Functions that return info on the data size
@@ -173,6 +184,10 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
+  //! Get number of tof bin for a given time difference
+  inline int get_tof_bin(const double delta) const;
+  //! Get number of tof bin for a given time difference, ignoring the TOF mashing factor
+  inline int get_unmashed_tof_bin(const double delta) const;
   //! Get number of TOF bins
   inline int get_num_tof_poss() const;
   //! Get minimum segment number
@@ -191,7 +206,22 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
+  //! Get TOF mash factor
+  inline int get_tof_mash_factor() const;
+  //! Get the index of the first TOF position
+  inline int get_min_tof_pos_num() const;
+  //! Get the index of the last timgin position.
+  inline int get_max_tof_pos_num() const;
+  //! Get the coincide window in pico seconds
+  //! \warning Proposed convension: If the scanner is not TOF ready then
+  //! the coincidence windowis in the TOF bin size.
+  inline float get_coincidence_window_in_pico_sec() const;
+  //! Get the total width of the coincide window in mm
+  inline float get_coincidence_window_width() const;
   //! Get the total number of sinograms
+  /*! Note that this will count TOF sinograms as well.
+      \see get_num_non_tof_sinograms()
+  */
   inline int get_num_sinograms() const;
   //! Get the number of non-tof sinograms
   /*! Note that this is the sum of the number of axial poss over all segments.
@@ -201,6 +231,9 @@ public:
   //! Get the total size of the data
   inline std::size_t size_all() const;
   //@}
+
+  //! Determine if TOF data from tof_mash_factor and num_tof_bins
+  inline bool is_tof_data() const;
 
   //| \name Functions that return geometrical info for a Bin
   //@{
@@ -278,7 +311,6 @@ public:
       \endcode
   */
   virtual float get_sampling_in_s(const Bin&) const;
-  //@}
 
   //! Find the bin in the projection data that 'contains' an LOR
   /*! Projection data corresponds to lines, so most Lines Of Response

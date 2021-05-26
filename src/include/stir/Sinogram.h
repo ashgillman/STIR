@@ -66,6 +66,8 @@ public:
   inline int get_segment_num() const;
   //! Get number of axial positions
   inline int get_axial_pos_num() const;
+  //! Get timing position index
+  inline int get_timing_pos_num() const;
   //! Get minimum view number
   inline int get_min_view_num() const;
   //! Get maximum view number

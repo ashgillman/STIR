@@ -18,6 +18,7 @@
   \brief Implementation of non-inline functions of class
   stir::ProjDataInfoCylindricalNoArcCorr
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Palak Wadhwa
 
@@ -28,7 +29,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/LORCoordinates.h"
 #include "stir/round.h"
-
+#include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
 #  include <strstream.h>
 #else
@@ -534,6 +535,9 @@ ProjDataInfoCylindricalNoArcCorr::get_bin(const LOR<float>& lor) const {
 #  else
   // find nearest segment
   {
+    if (delta_time != 0) {
+      error("TODO TOF");
+    }
     const float delta =
         (swap_direction ? lor_coords.z1() - lor_coords.z2() : lor_coords.z2() - lor_coords.z1()) / get_ring_spacing();
     // check if out of acquired range

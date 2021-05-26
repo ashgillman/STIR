@@ -17,6 +17,8 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
+
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
@@ -109,7 +111,7 @@ public:
   Succeeded set_sinogram(const Sinogram<float>& s);
 
   //! Get all sinograms for the given segment
-  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num) const;
+  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num, const int timing_num = 0) const;
   //! Get all viewgrams for the given segment
   SegmentByView<float> get_segment_by_view(const int segment_num) const;
 
@@ -135,6 +137,7 @@ protected:
   std::vector<std::streamoff> get_offsets_bin(const Bin) const;
 
 private:
+  void activate_TOF();
   //! offset of the whole 3d sinogram in the stream
   std::streamoff offset;
 
@@ -154,6 +157,9 @@ private:
   float scale_factor;
 
   //! Calculate the offset for the given segmnet
+  //! \warning This function returns the offset of a segment *WITHING* a timing position
+  //! If you like to get the offset of a segment from different timing positions it has to
+  //! be combined with get_offset_timing().
   std::streamoff get_offset_segment(const int segment_num) const;
 
   //! Calculate offsets for viewgram data

@@ -4,9 +4,11 @@
   \ingroup projdata
   \brief Implementations for non-inline functions of class stir::ProjDataInMemory
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 /*
+ *  Copyright (C) 2016, UCL
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2019, 2020, UCL

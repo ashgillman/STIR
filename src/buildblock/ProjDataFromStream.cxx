@@ -3,6 +3,7 @@
   \ingroup projdata
   \brief Implementations for non-inline functions of class stir::ProjDataFromStream
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
@@ -12,7 +13,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-12-21, Hammersmith Imanet Ltd
     Copyright (C) 2011-2012, Kris Thielemans
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2017 University College London
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 
@@ -72,6 +74,9 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<const ExamInfo> const& exam_in
       storage_order(o), on_disk_data_type(data_type), on_disk_byte_order(byte_order), scale_factor(scale_factor) {
   assert(storage_order != Unsupported);
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
+
+  if (proj_data_info_sptr->get_num_tof_poss() > 1)
+    activate_TOF();
 }
 
 ProjDataFromStream::ProjDataFromStream(shared_ptr<const ExamInfo> const& exam_info_sptr,
@@ -83,13 +88,18 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<const ExamInfo> const& exam_in
   assert(storage_order != Unsupported);
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
 
-  segment_sequence.resize(proj_data_info_ptr->get_num_segments());
+  segment_sequence.resize(proj_data_info_sptr->get_num_segments());
 
+  // N.E. Take this opportunity to calculate the size of the complete -full- 3D sinogram.
+  // We will need that to skip timing positions
   int segment_num, i;
   for (i = 0, segment_num = proj_data_info_ptr->get_min_segment_num(); segment_num <= proj_data_info_ptr->get_max_segment_num();
        ++i, ++segment_num) {
     segment_sequence[i] = segment_num;
   }
+
+  if (proj_data_info_sptr->get_num_tof_poss() > 1)
+    activate_TOF();
 }
 
 Viewgram<float>
@@ -224,7 +234,7 @@ ProjDataFromStream::set_bin_value(const Bin& this_bin) {
 }
 
 vector<streamoff>
-ProjDataFromStream::get_offsets(const int view_num, const int segment_num) const
+ProjDataFromStream::get_offsets(const int view_num, const int segment_num, const int timing_num) const
 
 {
   if (!(segment_num >= get_min_segment_num() && segment_num <= get_max_segment_num()))
@@ -312,6 +322,7 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v) {
   }
   int segment_num = v.get_segment_num();
   int view_num = v.get_view_num();
+  int timing_pos = v.get_timing_pos_num();
 
   vector<streamoff> offsets = get_offsets(view_num, segment_num);
   const streamoff segment_offset = offsets[0];
@@ -492,7 +503,8 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num, co
   const streamoff segment_offset = offsets[0];
   const streamoff beg_ax_pos_offset = offsets[1];
   const streamoff intra_ax_pos_offset = offsets[2];
-  Sinogram<float> sinogram(proj_data_info_sptr, ax_pos_num, segment_num);
+
+  Sinogram<float> sinogram(proj_data_info_sptr, ax_pos_num, segment_num, timing_pos);
   float scale = float(1);
   Succeeded succeeded = Succeeded::yes;
 
@@ -542,6 +554,7 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num, co
   }
   if (succeeded == Succeeded::no)
     error("ProjDataFromStream: error reading data");
+
   sinogram *= scale_factor;
 
   if (make_num_tangential_poss_odd && (get_num_tangential_poss() % 2 == 0)) {
@@ -708,6 +721,8 @@ ProjDataFromStream::get_segment_by_view(const int segment_num) const {
   if (get_storage_order() == Segment_View_AxialPos_TangPos) {
     SegmentByView<float> segment(proj_data_info_sptr, segment_num);
     streamoff segment_offset = get_offset_segment(segment_num);
+    // Go to the right timing full 3D sinogram
+    segment_offset += get_offset_timing(timing_pos);
     float scale = float(1);
     Succeeded succeeded = Succeeded::yes;
 #ifdef STIR_OPENMP
@@ -850,29 +865,29 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v) {
 #if 0
 ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
 {
-    
+
  shared_ptr<iostream> p_in_stream;
-  
-    
+
+
     char filename[256];
-        
+
     ask_filename_with_extension(
-      filename, 
+      filename,
       "Enter file name of 3D sinogram data : ", ".scn");
 
 
     // KT 03/07/2001 initialise to avoid compiler warnings
-    ios::openmode  open_mode=ios::in; 
+    ios::openmode  open_mode=ios::in;
     switch(ask_num("Read (1), Create and write(2), Read/Write (3) : ", 1,3,1))
     {
       case 1: open_mode=ios::in; break;
       case 2: open_mode=ios::out; break;
       case 3: open_mode=ios::in | ios::out; break;
       }
-    
+
     if (on_disk)
     {
-      
+
       //fstream * p_fstream = new fstream;
       p_in_stream.reset(new fstream (filename, open_mode | ios::binary));
       if (!p_in_stream->good())
@@ -883,10 +898,10 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
       //p_in_stream = p_fstream;
     }
     else
-    {  
+    {
       streamsize file_size = 0;
       char *memory = 0;
-      { 
+      {
         fstream input;
         open_read_binary(input, filename);
         memory = (char *)read_stream_in_memory(input, file_size);
@@ -896,35 +911,37 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
       // This is the old implementation of the strstream class.
       // The next constructor should work according to the doc, but it doesn't in gcc 2.8.1.
       //strstream in_stream(memory, file_size, ios::in | ios::binary);
-      // Reason: in_stream contains an internal strstreambuf which is 
+      // Reason: in_stream contains an internal strstreambuf which is
       // initialised as buffer(memory, file_size, memory), which prevents
       // reading from it.
-      
+
       strstreambuf * buffer = new strstreambuf(memory, file_size, memory+file_size);
       p_in_stream.reset(new iostream(buffer));
 #  else
       // TODO this does allocate and copy 2 times
           // TODO file_size could be longer than what size_t allows, but string doesn't take anything longer
-      p_in_stream.reset(new std::stringstream (string(memory, std::size_t(file_size)), 
+      p_in_stream.reset(new std::stringstream (string(memory, std::size_t(file_size)),
                                            open_mode | ios::binary));
-        
+
       delete[] memory;
 #  endif
       
     } // else 'on_disk' 
 
-   
-    // KT 03/07/2001 initialise to avoid compiler warnings    
+    } // else 'on_disk'
+
+
+    // KT 03/07/2001 initialise to avoid compiler warnings
     ProjDataFromStream::StorageOrder storage_order =
       Segment_AxialPos_View_TangPos;
     {
     int data_org = ask_num("Type of data organisation:\n\
-      0: Segment_AxialPos_View_TangPos, 1: Segment_View_AxialPos_TangPos", 
+      0: Segment_AxialPos_View_TangPos, 1: Segment_View_AxialPos_TangPos",
                            0,
                            1,0);
-    
+
     switch (data_org)
-    { 
+    {
     case 0:
       storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
       break;
@@ -933,13 +950,13 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
       break;
     }
     }
-    
+
     NumericType data_type;
     {
     int data_type_sel = ask_num("Type of data :\n\
       0: signed 16bit int, 1: unsigned 16bit int, 2: 4bit float ", 0,2,2);
     switch (data_type_sel)
-    { 
+    {
     case 0:
       data_type = NumericType::SHORT;
       break;
@@ -951,64 +968,64 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
       break;
     }
     }
-    
-    
+
+
     ByteOrder byte_order;
-    { 
-      byte_order = 
+    {
+      byte_order =
         ask("Little endian byte order ?",
         ByteOrder::get_native_order() == ByteOrder::little_endian) ?
         ByteOrder::little_endian :
       ByteOrder::big_endian;
     }
-    
+
     std::streamoff offset_in_file ;
     {
       // find file size
-      p_in_stream->seekg(static_cast<std::streamoff>(0), ios::beg);   
+      p_in_stream->seekg(static_cast<std::streamoff>(0), ios::beg);
       streamsize file_size = find_remaining_size(*p_in_stream);
-      
-      offset_in_file = ask_num("Offset in file (in bytes)", 
+
+      offset_in_file = ask_num("Offset in file (in bytes)",
                                static_cast<std::streamoff>(0),
-                               static_cast<std::streamoff>(file_size), 
+                               static_cast<std::streamoff>(file_size),
                                static_cast<std::streamoff>(0));
     }
     float scale_factor =1;
-    
+
     shared_ptr<ProjDataInfo> data_info_ptr(ProjDataInfo::ask_parameters());
-    
-    vector<int> segment_sequence_in_stream; 
-    segment_sequence_in_stream = vector<int>(data_info_ptr->get_num_segments());  
-    segment_sequence_in_stream[0] =  0; 
-    
+
+    vector<int> segment_sequence_in_stream;
+    segment_sequence_in_stream = vector<int>(data_info_ptr->get_num_segments());
+    segment_sequence_in_stream[0] =  0;
+
     for (int i=1; i<= data_info_ptr->get_num_segments()/2; i++)
-    { 
+    {
       segment_sequence_in_stream[2*i-1] = i;
       segment_sequence_in_stream[2*i] = -i;
     }
-    
-    
+
+
     cerr << "Segment<float> sequence :";
     for (unsigned int i=0; i<segment_sequence_in_stream.size(); i++)
       cerr << segment_sequence_in_stream[i] << "  ";
     cerr << endl;
-    
-    
-    
+
+
+
     ProjDataFromStream* proj_data_ptr =
-      new 
-      ProjDataFromStream (exam_info_sptr, 
-			  data_info_ptr,
-                          p_in_stream, offset_in_file, 
+      new
+      ProjDataFromStream (exam_info_sptr,
+              data_info_ptr,
+                          p_in_stream, offset_in_file,
                           segment_sequence_in_stream,
-                          storage_order,data_type,byte_order,  
+                          storage_order,data_type,byte_order,
                           scale_factor);
 
     cerr << "writing Interfile header for "<< filename << endl;
     write_basic_interfile_PDFS_header(filename, *proj_data_ptr);
 
     return proj_data_ptr;
-    
+
 }
 
 #endif

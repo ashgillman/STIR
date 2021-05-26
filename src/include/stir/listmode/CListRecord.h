@@ -11,6 +11,8 @@
 
 */
 /*
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     Copyright (C) 2019, National Physical Laboratory
     Copyright (C) 2019, University College of London
     This file is part of STIR.
@@ -55,6 +57,12 @@ public:
 
 class CListRecord : public ListRecord {
 public:
+  //! Used in TOF reconstruction to get both the geometric and the timing
+  //!  component of the event
+  virtual void full_event(Bin&, const ProjDataInfo&) const {
+    error("CListRecord::full_event() is implemented only for records which "
+          "hold timing and spatial information.");
+  }
 };
 
 class CListRecordWithGatingInput : public CListRecord {};

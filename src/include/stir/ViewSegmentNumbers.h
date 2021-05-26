@@ -43,6 +43,8 @@ public:
   inline int segment_num() const;
   //! get view number for const objects
   inline int view_num() const;
+  //! get tof number for const objects
+  inline int tof_pos_num() const;
 
   //! get reference to segment number
   inline int& segment_num();

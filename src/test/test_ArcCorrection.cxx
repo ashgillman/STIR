@@ -140,13 +140,21 @@ ArcCorrectionTests::run_tests() {
   }
 }
 
-END_NAMESPACE_STIR
+void
+ArcCorrectionTests::run_tests_tof() {
+  cerr << "-------- Testing ArcCorrection for TOF scanner --------\n";
+  ArcCorrection arc_correction;
+  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::PETMR_Signa));
 
-USING_NAMESPACE_STIR
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ProjDataInfoGE(scanner_ptr,
+                                                                           /*max_delta*/ 5, /*views*/ 112, /*tang_pos*/ 357,
+                                                                           /*arc_corrected*/ false, /*tof_mashing_factor*/ 116));
 
-int
-main() {
-  ArcCorrectionTests tests;
-  tests.run_tests();
-  return tests.main_return_value();
-}
+  USING_NAMESPACE_STIR
+
+  int main() {
+    ArcCorrectionTests tests;
+    tests.run_tests();
+    tests.run_tests_tof();
+    return tests.main_return_value();
+  }

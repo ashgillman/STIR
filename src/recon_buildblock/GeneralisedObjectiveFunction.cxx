@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -13,6 +14,7 @@
   \ingroup GeneralisedObjectiveFunction
   \brief Declaration of class stir::GeneralisedObjectiveFunction
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
 
@@ -24,7 +26,7 @@
 #include "stir/Succeeded.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
-
+#include "stir/info.h"
 using std::string;
 
 START_NAMESPACE_STIR
@@ -35,12 +37,14 @@ GeneralisedObjectiveFunction<TargetT>::set_defaults() {
   this->prior_sptr.reset();
   // note: cannot use set_num_subsets(1) here, as other parameters (such as projectors) are not set-up yet.
   this->num_subsets = 1;
+  use_tof = false;
 }
 
 template <typename TargetT>
 void
 GeneralisedObjectiveFunction<TargetT>::initialise_keymap() {
   this->parser.add_parsing_key("prior type", &prior_sptr);
+  this->parser.add_key("Use TOF information", &use_tof);
 }
 
 template <typename TargetT>
@@ -137,6 +141,12 @@ template <typename TargetT>
 int
 GeneralisedObjectiveFunction<TargetT>::get_num_subsets() const {
   return this->num_subsets;
+}
+
+template <typename TargetT>
+bool
+GeneralisedObjectiveFunction<TargetT>::get_tof_status() const {
+  return this->use_tof;
 }
 
 template <typename TargetT>

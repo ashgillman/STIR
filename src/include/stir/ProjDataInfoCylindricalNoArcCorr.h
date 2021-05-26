@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000- 2011-06-24, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     SPDX-License-Identifier: Apache-2.0
@@ -15,6 +16,7 @@
 
   \brief Declaration of class stir::ProjDataInfoCylindricalNoArcCorr
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 
 */
@@ -217,7 +219,7 @@ public:
   */
   inline void get_det_pair_for_bin(int& det1_num, int& ring1_num, int& det2_num, int& ring2_num, const Bin&) const;
 
-  //@}
+  inline void get_det_pair_for_bin(int& det_num1, int& ring_num1, int& det_num2, int& ring_num2, const Bin& bin) const;
 
   virtual Bin get_bin(const LOR<float>&) const;
 
