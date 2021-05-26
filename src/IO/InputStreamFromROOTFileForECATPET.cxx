@@ -1,17 +1,9 @@
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021, UCL
     Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -61,19 +53,21 @@ InputStreamFromROOTFileForECATPET::get_next_record(CListRecordROOT& record) {
     if (current_position == nentries)
       return Succeeded::no;
 
-    if (stream_ptr->GetEntry(current_position) == 0)
-      return Succeeded::no;
-
+    Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
     current_position++;
 
-    if ((comptonphantom1 > 0 || comptonphantom2 > 0) && exclude_scattered)
+    if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
       continue;
-    if (eventID1 != eventID2 && exclude_randoms)
-      continue;
-    // multiply here by 1000 to convert the list mode energy from MeV to keV
-    if (this->get_energy1_in_keV() < low_energy_window || this->get_energy1_in_keV() > up_energy_window ||
-        this->get_energy2_in_keV() < low_energy_window || this->get_energy2_in_keV() > up_energy_window)
-      continue;
+
+    GetEntryCheck(br_time1->GetEntry(brentry));
+    GetEntryCheck(br_time2->GetEntry(brentry));
+
+    // Get positional ID information
+    GetEntryCheck(br_crystalID1->GetEntry(brentry));
+    GetEntryCheck(br_crystalID2->GetEntry(brentry));
+
+    GetEntryCheck(br_blockID1->GetEntry(brentry));
+    GetEntryCheck(br_blockID2->GetEntry(brentry));
 
     break;
   }
@@ -97,9 +91,7 @@ InputStreamFromROOTFileForECATPET::get_next_record(CListRecordROOT& record) {
   crystal1 += offset_dets;
   crystal2 += offset_dets;
 
-  double delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
-
-  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1, delta_timing_bin, eventID1, eventID2);
+  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1, time2, eventID1, eventID2);
 }
 
 std::string

@@ -17,15 +17,7 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -73,12 +65,11 @@ BackProjectorByBinUsingSquareProjMatrixByBin::actual_back_project(DiscretisedDen
     const Viewgram<float>& viewgram = *r_viewgrams_iter;
     const int view_num = viewgram.get_view_num();
     const int segment_num = viewgram.get_segment_num();
-    const int timing_pos_num = viewgram.get_timing_pos_num();
 
     for (int tang_pos = min_tangential_pos_num; tang_pos <= max_tangential_pos_num; ++tang_pos)
       for (int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num; ++ax_pos) {
 
-        Bin bin(segment_num, view_num, ax_pos, tang_pos, timing_pos_num, viewgram[ax_pos][tang_pos]);
+        Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
         proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
         ProjMatrixElemsForOneBin::iterator element_ptr = proj_matrix_row.begin();
 
@@ -93,11 +84,6 @@ BackProjectorByBinUsingSquareProjMatrixByBin::actual_back_project(DiscretisedDen
       }
     ++r_viewgrams_iter;
   }
-}
-
-void
-BackProjectorByBinUsingSquareProjMatrixByBin::actual_back_project(DiscretisedDensity<3, float>& image, const Bin& bin) {
-  error("BackProjectorByBinUsingSquareProjMatrixByBin is not supported for list-mode reconstruction. Abort.");
 }
 
 void

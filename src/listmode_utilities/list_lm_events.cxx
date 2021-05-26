@@ -4,15 +4,7 @@
     Copyright (C) 2019, University College of London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 
@@ -142,7 +134,6 @@ main(int argc, char* argv[]) {
                  << ",r:" << det_pos.pos1().axial_coord() << ",l:" << det_pos.pos1().radial_coord() << ")-"
                  << "(c:" << det_pos.pos2().tangential_coord() << ",r:" << det_pos.pos2().axial_coord()
                  << ",l:" << det_pos.pos2().radial_coord() << ")";
-            cout << " delta time: " << event_ptr->get_delta_time();
             listed = true;
           }
         }

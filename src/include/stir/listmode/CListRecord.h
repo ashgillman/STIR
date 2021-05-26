@@ -6,8 +6,6 @@
   \brief Declarations of classes stir::CListRecord, and stir::CListEvent which
   are used for list mode data.
 
-
-  \author Nikos Efthimiou
   \author Daniel Deidda
   \author Kris Thielemans
 
@@ -19,15 +17,7 @@
     Copyright (C) 2019, University College of London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -62,19 +52,6 @@ public:
   //! Changes the event from prompt to delayed or vice versa
   /*! Default implementation just returns Succeeded::no. */
   virtual Succeeded set_prompt(const bool prompt = true);
-
-  //! Returns true is the delta_time has been swapped.
-  bool get_swapped() const { return swapped; }
-
-  double get_delta_time() const { return delta_time; }
-
-protected:
-  //! The detection time difference, between the two photons.
-  //! This will work for ROOT files, but not so sure about acquired data.
-  double delta_time;
-
-  //! Indicates if the detectors' order has been swapped.
-  bool swapped;
 
 }; /*-coincidence event*/
 

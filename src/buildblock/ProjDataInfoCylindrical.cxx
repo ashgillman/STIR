@@ -2,20 +2,11 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-10-18 Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
-    Copyright (C) 2013, 2017, 2018, University College London
-    Copyright (C) 2016, University of Hull
+    Copyright (C) 2013, 2018, 2021, University College London
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -44,6 +35,9 @@
 
 #include "stir/round.h"
 #include "stir/numerics/norm.h"
+#include "stir/warning.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
 #include <math.h>
 
 #ifndef STIR_NO_NAMESPACES
@@ -69,8 +63,30 @@ ProjDataInfoCylindrical::ProjDataInfoCylindrical(const shared_ptr<Scanner>& scan
                                                  const int num_tangential_poss)
     : ProjDataInfo(scanner_ptr, num_axial_pos_per_segment, num_views, num_tangential_poss), min_ring_diff(min_ring_diff_v),
       max_ring_diff(max_ring_diff_v) {
-
   azimuthal_angle_sampling = static_cast<float>(_PI / num_views);
+  azimuthal_angle_offset = scanner_ptr->get_intrinsic_azimuthal_tilt();
+  // adjust offset for view-mashing
+  {
+    const int num_detectors_per_ring = scanner_ptr->get_num_detectors_per_ring();
+    if ((num_detectors_per_ring > 2) && (num_views * 2 != num_detectors_per_ring)) {
+      if ((num_detectors_per_ring % (num_views * 2)) != 0) {
+        warning(
+            boost::format("Expected the number of views (%1%) to be related to the number of detectors per ring (%2%),"
+                          " but this is not the case. Continuing anyway (but without adjusting the azimuthal angle offset).") %
+            num_views % num_detectors_per_ring);
+      } else {
+        const int view_mashing = get_view_mashing_factor();
+        const float offset_inc = static_cast<float>(_PI / (num_detectors_per_ring / 2) * (view_mashing - 1) / 2.F);
+        info(boost::format(
+                 "Detected view-mashing factor %1% from the number of views (%2%) and the number of detectors per ring (%3%).\n"
+                 "Adjusting the azimuthal angle offset accordingly (an extra offset of %4% degrees)") %
+             view_mashing % num_views % num_detectors_per_ring % (offset_inc * 180 / _PI));
+
+        azimuthal_angle_offset += offset_inc;
+      }
+    }
+  }
+
   ring_radius.resize(0, 0);
   ring_radius[0] = get_scanner_ptr()->get_effective_ring_radius();
   ring_spacing = get_scanner_ptr()->get_ring_spacing();
@@ -281,6 +297,11 @@ ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num(int& ring1, int
 }
 
 void
+ProjDataInfoCylindrical::set_azimuthal_angle_offset(const float angle_v) {
+  azimuthal_angle_offset = angle_v;
+}
+
+void
 ProjDataInfoCylindrical::set_azimuthal_angle_sampling(const float angle_v) {
   azimuthal_angle_sampling = angle_v;
 }
@@ -377,13 +398,6 @@ ProjDataInfoCylindrical::compute_segment_axial_pos_to_ring_pair(const int segmen
 }
 
 void
-ProjDataInfoCylindrical::set_tof_mash_factor(const int new_num) {
-  base_type::set_tof_mash_factor(new_num);
-  //! \todo N.E. Would be nice to have all the points of the scanner in cache.
-  // initialise_uncompressed_lor_as_point1point2();
-}
-
-void
 ProjDataInfoCylindrical::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment) {
   ProjDataInfo::set_num_axial_poss_per_segment(num_axial_poss_per_segment);
   ring_diff_arrays_computed = false;
@@ -447,69 +461,7 @@ ProjDataInfoCylindrical::get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float
   const float z1 = (m_in_mm - max_a * tantheta);
   const float z2 = (m_in_mm - min_a * tantheta);
 
-  lor = LORInAxialAndNoArcCorrSinogramCoordinates<float>(z1, z2, phi, asin(s_in_mm / get_ring_radius()), get_ring_radius(),
-                                                         false); // needs to set "swapped" to false given above code
-}
-
-void
-ProjDataInfoCylindrical::get_LOR_as_two_points(CartesianCoordinate3D<float>& coord_1, CartesianCoordinate3D<float>& coord_2,
-                                               const Bin& bin) const {
-  const float s_in_mm = get_s(bin);
-  const float m_in_mm = get_m(bin);
-  const float tantheta = get_tantheta(bin);
-  const float phi = get_phi(bin);
-  /* parametrisation of LOR is
-   X= s*cphi + a*sphi,
-   Y= s*sphi - a*cphi,
-   Z= m - a*tantheta
-   find now min_a, max_a such that end-points intersect the ring
-*/
-  assert(fabs(s_in_mm) < get_ring_radius());
-  // a has to be such that X^2+Y^2 == R^2
-  const float max_a = sqrt(square(get_ring_radius()) - square(s_in_mm));
-  const float min_a = -max_a;
-
-  coord_1.x() = s_in_mm * cos(phi) + min_a * sin(phi);
-  coord_1.y() = s_in_mm * sin(phi) - max_a * cos(phi);
-  coord_1.z() = m_in_mm - max_a * tantheta;
-
-  coord_2.x() = s_in_mm * cos(phi) + max_a * sin(phi);
-  coord_2.y() = s_in_mm * sin(phi) - min_a * cos(phi);
-  coord_2.z() = m_in_mm - min_a * tantheta;
-
-  if (bin.timing_pos_num() < 0)
-    std::swap(coord_1, coord_2);
-}
-
-void
-ProjDataInfoCylindrical::get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1, CartesianCoordinate3D<float>& coord_2,
-                                                   const int det1, const int det2, const int ring1, const int ring2,
-                                                   const int timing_pos) const {
-  const int num_detectors_per_ring = get_scanner_ptr()->get_num_detectors_per_ring();
-
-  float h_scanner_height = ((get_scanner_ptr()->get_ring_spacing() - 1) * get_scanner_ptr()->get_num_rings()) / 2.F;
-
-  // although code maybe doesn't really need the following,
-  // asserts in the LOR code will break if these conditions are not satisfied.
-  assert(0 <= det1);
-  assert(det1 < num_detectors_per_ring);
-  assert(0 <= det2);
-  assert(det2 < num_detectors_per_ring);
-
-  LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_inner_ring_radius());
-
-  cyl_coords.p1().psi() = static_cast<float>((2. * _PI / num_detectors_per_ring) * (det1));
-  cyl_coords.p2().psi() = static_cast<float>((2. * _PI / num_detectors_per_ring) * (det2));
-
-  cyl_coords.p1().z() = ring1 * get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
-  cyl_coords.p2().z() = ring2 * get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
-
-  LORAs2Points<float> lor(cyl_coords);
-  coord_1 = lor.p1();
-  coord_2 = lor.p2();
-
-  if (timing_pos < 0)
-    std::swap(coord_1, coord_2);
+  lor = LORInAxialAndNoArcCorrSinogramCoordinates<float>(z1, z2, phi, asin(s_in_mm / get_ring_radius()), get_ring_radius());
 }
 
 string

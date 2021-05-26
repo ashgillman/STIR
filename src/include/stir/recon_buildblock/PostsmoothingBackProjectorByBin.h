@@ -15,15 +15,7 @@
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
 
     See STIR/LICENSE.txt for details
@@ -82,14 +74,6 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers* get_symmetries_used() const;
 
-  void update_filtered_density_image(DiscretisedDensity<3, float>&);
-
-  void init_filtered_density_image(DiscretisedDensity<3, float>&);
-
-  BackProjectorByBin* get_original_back_projector_ptr() const;
-
-  PostsmoothingBackProjectorByBin* clone() const;
-
 private:
   shared_ptr<BackProjectorByBin> original_back_projector_ptr;
 
@@ -99,10 +83,6 @@ private:
 #endif
   void actual_back_project(const RelatedViewgrams<float>&, const int min_axial_pos_num, const int max_axial_pos_num,
                            const int min_tangential_pos_num, const int max_tangential_pos_num);
-
-  void actual_back_project(DiscretisedDensity<3, float>& density, const Bin& bin);
-
-  shared_ptr<DiscretisedDensity<3, float>> filtered_density_sptr;
 
   virtual void set_defaults();
   virtual void initialise_keymap();

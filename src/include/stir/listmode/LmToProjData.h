@@ -8,7 +8,6 @@
 
   \brief Declaration of the stir::LmToProjData class which is used to bin listmode data to (3d) sinograms
 
-  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Daniel Deidda
@@ -18,18 +17,10 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     Copyright (C) 2017, University of Hull
     Copyright (C) 2019, National Physical Laboratory
-    Copyright (C) 2019, University College of London
+    Copyright (C) 2019, 2021, University College of London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -113,8 +104,7 @@ class ListTime;
     ; if you're short of RAM (i.e. a single projdata does not fit into memory),
     ; you can use this to process the list mode data in multiple passes.
     num_segments_in_memory := -1
-    ; same for TOF bins
-    num_TOF_bins_in_memory := 1
+
   End :=
   \endverbatim
 
@@ -177,16 +167,50 @@ public:
   /*! \warning leaves parameters ill-defined. Set them by parsing. */
   LmToProjData();
 
+  /*! \name Functions to get/set parameters
+    This can be used as alternative to the parsing mechanism.
+   \warning Be careful with setting shared pointers. If you modify the objects in
+   one place, all objects that use the shared pointer will be affected.
+  */
+  //@{
+  void set_template_proj_data_info_sptr(shared_ptr<const ProjDataInfo>);
+  shared_ptr<ProjDataInfo> get_template_proj_data_info_sptr();
+
+  //! \brief set input data
+  /*! will throw of the input data is not of type \c ListModeData */
+  virtual void set_input_data(const shared_ptr<ExamData>&);
+  //! \brief set input data
+  /*! will throw of the input data is not of type \c ListModeData */
+  virtual void set_input_data(const std::string& filename);
+#if 0
+  //! get input data
+  /*! Will throw an exception if it wasn't set first */
+  virtual ListModeData& get_input_data() const;
+#endif
+
+  void set_output_filename_prefix(const std::string&);
+  std::string get_output_filename_prefix() const;
+
+  void set_store_prompts(bool);
+  bool get_store_prompts() const;
+  void set_store_delayeds(bool);
+  bool get_store_delayeds() const;
+  void set_num_segments_in_memory(int);
+  int get_num_segments_in_memory() const;
+  void set_num_events_to_store(long int);
+  long int get_num_events_to_store() const;
+  void set_time_frame_definitions(const TimeFrameDefinitions&);
+  const TimeFrameDefinitions& get_time_frame_definitions() const;
+  //@}
+
+  //! Perform various checks
+  /*! Note: this is currently called by post_processing(). This will change in version 5.0 */
+  virtual Succeeded set_up();
+
   //! This function does the actual work
   //! N.E: In order to keep the ToF functions separate from the non-TOF
   //! STIR this function just call the appropriate actual_process_data_with(out)_tof().
   virtual void process_data();
-
-  //! A test function for time-of-flight data. At this moment we lack a lot of infrastructure in
-  //! order to be able to develope a viable test function of class anywhere else. At a future point
-  //! I should develope a proper test function. This function is going to fill the proj_data with
-  //! the index number of the respective TOF position, for every TOF position.
-  void run_tof_test_function();
 
 protected:
   //! will be called when a new time frame starts
@@ -274,6 +298,9 @@ protected:
   bool do_time_frame;
   //! A variable that will be set to 1,0 or -1, according to store_prompts and store_delayeds
   int delayed_increment;
+
+  //! an internal bool variable to check if the object has been set-up or not
+  bool _already_setup;
 };
 
 END_NAMESPACE_STIR

@@ -459,7 +459,7 @@ BinNormalisationFromECAT8::use_crystal_interference_factors() const {
 
 #if 1
 float
-BinNormalisationFromECAT8::get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
+BinNormalisationFromECAT8::get_uncalibrated_bin_efficiency(const Bin& bin) const {
 
   // TODO disable when not HR+ or HR++
   /*
@@ -546,6 +546,11 @@ BinNormalisationFromECAT8::get_uncalibrated_bin_efficiency(const Bin& bin, const
                                      efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()];
         }
         if (this->use_dead_time()) {
+          if (get_exam_info_sptr()->get_time_frame_definitions().get_num_time_frames() == 0)
+            error("BinNormalisationFromECAT8: projection_data needs to have timing information to compute dead-time");
+          const float start_time = get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+          const float end_time = get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
+
           lor_efficiency_this_pair *=
               get_dead_time_efficiency(pos1, start_time, end_time) * get_dead_time_efficiency(pos2, start_time, end_time);
         }

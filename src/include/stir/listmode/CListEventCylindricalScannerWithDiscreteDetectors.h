@@ -12,15 +12,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -42,9 +34,9 @@ START_NAMESPACE_STIR
 */
 class CListEventCylindricalScannerWithDiscreteDetectors : public CListEvent {
 public:
-  inline explicit CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<const ProjDataInfo>& proj_data_info);
+  inline explicit CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr);
 
-  const Scanner* get_scanner_ptr() const { return this->uncompressed_proj_data_info_sptr->get_scanner_ptr(); }
+  const Scanner* get_scanner_ptr() const { return this->scanner_sptr.get(); }
 
   //! This routine returns the corresponding detector pair
   virtual void get_detection_position(DetectionPositionPair<>&) const = 0;
@@ -80,8 +72,9 @@ protected:
     return uncompressed_proj_data_info_sptr;
   }
 
-  // shared_ptr<Scanner> scanner_sptr;
+  shared_ptr<Scanner> scanner_sptr;
 
+private:
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> uncompressed_proj_data_info_sptr;
 };
 

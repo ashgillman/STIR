@@ -6,15 +6,7 @@
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -104,11 +96,6 @@ RelatedViewgrams<elemT>::has_same_characteristics(self_type const& other, string
   if (this->get_basic_segment_num() != other.get_basic_segment_num()) {
     explanation =
         str(format("Differing basic segment number: %1% vs %2%") % this->get_basic_segment_num() % other.get_basic_segment_num());
-    return false;
-  }
-  if (this->get_basic_timing_pos_num() != other.get_basic_timing_pos_num()) {
-    explanation = str(format("Differing basic timing position index: %1% vs %2%") % this->get_basic_timing_pos_num() %
-                      other.get_basic_timing_pos_num());
     return false;
   }
   return true;
@@ -294,7 +281,7 @@ RelatedViewgrams<elemT>::grow(const IndexRange<2>& range) {
   // so, we have to construct new viewgrams for this
   for (iterator iter = begin(); iter != end(); ++iter) {
     iter->grow(range);
-    *iter = Viewgram<elemT>(*iter, pdi_shared_ptr, iter->get_view_num(), iter->get_segment_num(), iter->get_timing_pos_num());
+    *iter = Viewgram<elemT>(*iter, pdi_shared_ptr, iter->get_view_num(), iter->get_segment_num());
   }
 
   check_state();

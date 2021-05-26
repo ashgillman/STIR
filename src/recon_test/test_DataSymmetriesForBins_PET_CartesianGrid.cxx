@@ -4,15 +4,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -125,14 +117,13 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests_2_proj_matrices_1_bin(co
   if (!check(elems_no_sym == elems_with_sym, "comparing lors")) {
     // SYM const Bin bin=*bin_iter;
     cerr << "Current bin:  segment = " << bin.segment_num() << ", axial pos " << bin.axial_pos_num()
-         << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num()
-         << ", timing position index = " << bin.timing_pos_num() << "\n";
+         << ", view = " << bin.view_num() << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
     ProjMatrixElemsForOneBin::const_iterator no_sym_iter = elems_no_sym.begin();
     ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
     while (no_sym_iter != elems_no_sym.end() || with_sym_iter != elems_with_sym.end()) {
       if (no_sym_iter == elems_no_sym.end() || with_sym_iter == elems_with_sym.end() ||
           no_sym_iter->get_coords() != with_sym_iter->get_coords() ||
-          fabs(no_sym_iter->get_value() / with_sym_iter->get_value() - 1) > .01) {
+          fabs(no_sym_iter->get_value() / with_sym_iter->get_value() - 1) > .0002) {
         bool inc_no_sym_iter = false;
         if (no_sym_iter != elems_no_sym.end() &&
             (with_sym_iter == elems_with_sym.end() || coordinates_less(no_sym_iter->get_coords(), with_sym_iter->get_coords()) ||
@@ -166,14 +157,12 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests_2_proj_matrices(const Pr
 #if 1
   for (int s = -proj_data_info_sptr->get_max_segment_num(); s <= proj_data_info_sptr->get_max_segment_num(); ++s)
     for (int v = proj_data_info_sptr->get_min_view_num(); v <= proj_data_info_sptr->get_max_view_num(); ++v)
-      for (int timing_pos = proj_data_info_sptr->get_min_tof_pos_num(); timing_pos <= proj_data_info_sptr->get_max_tof_pos_num();
-           ++timing_pos)
-        for (int a = proj_data_info_sptr->get_min_axial_pos_num(s); a <= proj_data_info_sptr->get_max_axial_pos_num(s); ++a)
-          for (int t = -6; t <= 6; t += 3) {
-            const Bin bin(s, v, a, t, timing_pos);
-            // SYM if (proj_matrix_with_symm.get_symmetries_ptr()->is_basic(bin))
-            run_tests_2_proj_matrices_1_bin(proj_matrix_no_symm, proj_matrix_with_symm, bin);
-          }
+      for (int a = proj_data_info_sptr->get_min_axial_pos_num(s); a <= proj_data_info_sptr->get_max_axial_pos_num(s); ++a)
+        for (int t = -6; t <= 6; t += 3) {
+          const Bin bin(s, v, a, t);
+          // SYM if (proj_matrix_with_symm.get_symmetries_ptr()->is_basic(bin))
+          run_tests_2_proj_matrices_1_bin(proj_matrix_no_symm, proj_matrix_with_symm, bin);
+        }
 
 #else
   const int oblique_seg_num = proj_data_info_sptr->get_max_segment_num();
@@ -595,21 +584,6 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests() {
                                                               /*max_delta=*/12,
                                                               /*num_views=*/8,
                                                               /*num_tang_poss=*/16));
-
-      run_tests_for_1_projdata(proj_data_info_sptr);
-    }
-    {
-      cerr << "Testing with proj_data_info with time-of-flight";
-      // warning: make sure that parameters are ok such that hard-wired
-      // bins above are fine (e.g. segment 3 should be allowed)
-      shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::PETMR_Signa));
-      proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                                                              /*span=*/11,
-                                                              /*max_delta=*/5,
-                                                              /*num_views=*/scanner_sptr->get_num_detectors_per_ring() / 8,
-                                                              /*num_tang_poss=*/64,
-                                                              /*arc_corrected*/ false,
-                                                              /*tof_mashing*/ 116));
 
       run_tests_for_1_projdata(proj_data_info_sptr);
     }

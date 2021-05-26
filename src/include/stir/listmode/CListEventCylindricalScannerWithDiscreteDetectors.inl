@@ -12,15 +12,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -30,12 +22,11 @@
 START_NAMESPACE_STIR
 
 CListEventCylindricalScannerWithDiscreteDetectors::CListEventCylindricalScannerWithDiscreteDetectors(
-    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) {
-  this->uncompressed_proj_data_info_sptr =
-      std::dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(proj_data_info_sptr->create_shared_clone());
-
-  if (is_null_ptr(this->uncompressed_proj_data_info_sptr))
-    error("CListEventCylindricalScannerWithDiscreteDetectors takes only ProjDataInfoCylindricalNoArcCorr. Abord.");
+    const shared_ptr<Scanner>& scanner_sptr)
+    : scanner_sptr(scanner_sptr) {
+  this->uncompressed_proj_data_info_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(ProjDataInfo::ProjDataInfoCTI(
+      scanner_sptr, 1, scanner_sptr->get_num_rings() - 1, scanner_sptr->get_num_detectors_per_ring() / 2,
+      scanner_sptr->get_default_num_arccorrected_bins(), false)));
 }
 
 LORAs2Points<float>
@@ -55,8 +46,7 @@ CListEventCylindricalScannerWithDiscreteDetectors::get_LOR() const {
       coord_1, coord_2, det_pos.pos1().axial_coord(), det_pos.pos2().axial_coord(), det_pos.pos1().tangential_coord(),
       det_pos.pos2().tangential_coord());
   // find shift in z
-  const float shift = this->get_uncompressed_proj_data_info_sptr()->get_ring_spacing() *
-                      (this->get_uncompressed_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings() - 1) / 2.F;
+  const float shift = this->scanner_sptr->get_ring_spacing() * (this->scanner_sptr->get_num_rings() - 1) / 2.F;
   coord_1.z() -= shift;
   coord_2.z() -= shift;
 

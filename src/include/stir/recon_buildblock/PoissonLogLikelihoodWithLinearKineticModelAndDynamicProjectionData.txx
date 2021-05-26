@@ -8,15 +8,7 @@
 
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -198,7 +190,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::act
   else if (this->_single_frame_obj_funcs.size() != 0) {
     bool frames_are_balanced = true;
     for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-         frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num)
+         frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num)
       frames_are_balanced &= this->_single_frame_obj_funcs[frame_num].subsets_are_approximately_balanced(warning_message);
     return frames_are_balanced;
   } else
@@ -277,7 +269,7 @@ template <typename TargetT>
 int
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::set_num_subsets(const int num_subsets) {
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num) {
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num) {
     if (this->_single_frame_obj_funcs.size() != 0)
       if (this->_single_frame_obj_funcs[frame_num].set_num_subsets(num_subsets) != num_subsets)
         error("set_num_subsets didn't work");
@@ -327,11 +319,10 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::set
     return Succeeded::no;
 
   if (this->_patlak_plot_sptr->get_starting_frame() <= 0 ||
-      this->_patlak_plot_sptr->get_starting_frame() > this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames()) {
+      this->_patlak_plot_sptr->get_starting_frame() > this->_patlak_plot_sptr->get_ending_frame()) {
     warning("Starting frame is %d. Generally, it should be a late frame,\nbut in any case it should be less than the number of "
             "frames %d\nand at least 1.",
-            this->_patlak_plot_sptr->get_starting_frame(),
-            this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames());
+            this->_patlak_plot_sptr->get_starting_frame(), this->_patlak_plot_sptr->get_ending_frame());
     return Succeeded::no;
   }
   {
@@ -344,10 +335,10 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::set
 
     // construct _single_frame_obj_funcs
     this->_single_frame_obj_funcs.resize(this->_patlak_plot_sptr->get_starting_frame(),
-                                         this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames());
+                                         this->_patlak_plot_sptr->get_ending_frame());
 
     for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-         frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num) {
+         frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num) {
       this->_single_frame_obj_funcs[frame_num].set_projector_pair_sptr(this->_projector_pair_ptr);
       this->_single_frame_obj_funcs[frame_num].set_proj_data_sptr(this->_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
       this->_single_frame_obj_funcs[frame_num].set_max_segment_num_to_process(this->_max_segment_num_to_process);
@@ -412,14 +403,14 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
   DynamicDiscretisedDensity dyn_image_estimate = this->_dyn_image_template;
 
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num)
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num)
     std::fill(dyn_image_estimate[frame_num].begin_all(), dyn_image_estimate[frame_num].end_all(), 1.F);
 
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate, current_estimate);
 
   // loop over single_frame and use model_matrix
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num) {
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num) {
     std::fill(dyn_gradient[frame_num].begin_all(), dyn_gradient[frame_num].end_all(), 1.F);
 
     this->_single_frame_obj_funcs[frame_num].compute_sub_gradient_without_penalty_plus_sensitivity(
@@ -441,13 +432,13 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::act
 
   // TODO why fill with 1?
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num)
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num)
     std::fill(dyn_image_estimate[frame_num].begin_all(), dyn_image_estimate[frame_num].end_all(), 1.F);
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate, current_estimate);
 
   // loop over single_frame
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num) {
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num) {
     result += this->_single_frame_obj_funcs[frame_num].compute_objective_function_without_penalty(dyn_image_estimate[frame_num],
                                                                                                   subset_num);
   }
@@ -462,7 +453,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::add
 
   // loop over single_frame and use model_matrix
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num) {
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num) {
     dyn_sensitivity[frame_num] = this->_single_frame_obj_funcs[frame_num].get_subset_sensitivity(subset_num);
     //  add_subset_sensitivity(dyn_sensitivity[frame_num],subset_num);
   }
@@ -494,9 +485,9 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_input, input);
 
   VectorWithOffset<float> scale_factor(this->_patlak_plot_sptr->get_starting_frame(),
-                                       this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames());
+                                       this->_patlak_plot_sptr->get_ending_frame());
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num) {
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num) {
     assert(dyn_input[frame_num].find_max() == dyn_input[frame_num].find_min());
     if (dyn_input[frame_num].find_max() == dyn_input[frame_num].find_min() && dyn_input[frame_num].find_min() > 0.F)
       scale_factor[frame_num] = dyn_input[frame_num].find_max();
@@ -537,7 +528,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
   dyn_output.write_to_ecat7("dynamic_precomputed_denominator.img");
   DynamicProjData temp_projdata = this->get_dyn_proj_data();
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num)
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num)
     temp_projdata.set_proj_data_sptr(this->_single_frame_obj_funcs[frame_num].get_proj_data_sptr(), frame_num);
 
   temp_projdata.write_to_ecat7("DynamicProjections.S");
@@ -593,7 +584,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_current_image_estimate, current_image_estimate);
 
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num) {
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num) {
     assert(dyn_input[frame_num].find_max() == dyn_input[frame_num].find_min());
     this->_single_frame_obj_funcs[frame_num].accumulate_sub_Hessian_times_input_without_penalty(
         dyn_output[frame_num], dyn_current_image_estimate[frame_num], dyn_input[frame_num], subset_num);
@@ -613,7 +604,7 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<
   dyn_output.write_to_ecat7("dynamic_precomputed_denominator.img");
   DynamicProjData temp_projdata = this->get_dyn_proj_data();
   for (unsigned int frame_num = this->_patlak_plot_sptr->get_starting_frame();
-       frame_num <= this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames(); ++frame_num)
+       frame_num <= this->_patlak_plot_sptr->get_ending_frame(); ++frame_num)
     temp_projdata.set_proj_data_sptr(this->_single_frame_obj_funcs[frame_num].get_proj_data_sptr(), frame_num);
 
   temp_projdata.write_to_ecat7("DynamicProjections.S");

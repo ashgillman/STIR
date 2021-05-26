@@ -18,15 +18,7 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -106,6 +98,10 @@ ForwardProjectorByBinUsingRayTracing::set_up(const shared_ptr<const ProjDataInfo
 
   if (proj_data_info_sptr->get_num_views() % 2 != 0) {
     error("The on-the-fly Ray tracing forward projector cannot handle data with odd number of views. Use another projector. "
+          "Sorry.");
+  }
+  if (fabs(proj_data_info_sptr->get_phi(Bin(0, 0, 0, 0))) > 1.E-4F) {
+    error("The on-the-fly Ray tracing forward projector cannot handle data with non-zero view offset. Use another projector. "
           "Sorry.");
   }
 
@@ -370,7 +366,7 @@ ForwardProjectorByBinUsingRayTracing::forward_project_all_symmetries(
   const float R = proj_data_info_sptr->get_ring_radius();
 
   // a variable which will be used in the loops over tang_pos_num to get s_in_mm
-  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(), min_ax_pos_num, 0, pos_view.get_timing_pos_num());
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(), min_ax_pos_num, 0);
 
   // KT 20/06/2001 rewrote using get_phi
   const float cphi = cos(proj_data_info_sptr->get_phi(bin));
@@ -954,7 +950,7 @@ ForwardProjectorByBinUsingRayTracing::forward_project_all_symmetries_2D(Viewgram
   const float R = proj_data_info_sptr->get_ring_radius();
 
   // a variable which will be used in the loops over tang_pos_num to get s_in_mm
-  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(), min_axial_pos_num, 0, pos_view.get_timing_pos_num());
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(), min_axial_pos_num, 0);
 
   // KT 20/06/2001 rewrote using get_phi
   const float cphi = cos(proj_data_info_sptr->get_phi(bin));
@@ -1184,15 +1180,5 @@ ForwardProjectorByBinUsingRayTracing::forward_project_all_symmetries_2D(Viewgram
 
   stop_timers();
 }
-
-#if 0 // disabled as currently not used. needs to be written in the new style anyway
-void
-ForwardProjectorByBinUsingRayTracing::
- actual_forward_project(Bin& this_bin,
-                        const DiscretisedDensity<3,float>& density)
-{
-    error("ForwardProjectorByBinUsingRayTracing does not support single-bin forward projection. Abort.");
-}
-#endif
 
 END_NAMESPACE_STIR

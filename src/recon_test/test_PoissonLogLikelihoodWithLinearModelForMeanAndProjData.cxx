@@ -3,15 +3,7 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -175,17 +167,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
     shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
     proj_data_sptr.reset(new ProjDataInMemory(exam_info_sptr, proj_data_info_sptr));
     for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num) {
-      for (int timing_pos_num = proj_data_sptr->get_min_tof_pos_num(); timing_pos_num <= proj_data_sptr->get_max_tof_pos_num();
-           ++timing_pos_num) {
-        SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num, false, timing_pos_num);
-        // fill in some crazy values
-        float value = 0;
-        for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter) {
-          value = float(fabs((seg_num + .1) * value - 5)); // needs to be positive for Poisson
-          *iter = value;
-        }
-        proj_data_sptr->set_segment(segment);
+      SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num);
+      // fill in some crazy values
+      float value = 0;
+      for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter) {
+        value = float(fabs((seg_num + .1) * value - 5)); // needs to be positive for Poisson
+        *iter = value;
       }
+      proj_data_sptr->set_segment(segment);
     }
   } else {
     proj_data_sptr = ProjData::read_from_file(this->proj_data_filename);
@@ -229,17 +218,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
     shared_ptr<ProjData> mult_proj_data_sptr(new ProjDataInMemory(
         proj_data_sptr->get_exam_info_sptr(), proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
     for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num) {
-      for (int timing_pos_num = proj_data_sptr->get_min_tof_pos_num(); timing_pos_num <= proj_data_sptr->get_max_tof_pos_num();
-           ++timing_pos_num) {
-        SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num, false, timing_pos_num);
-        // fill in some crazy values
-        float value = 0;
-        for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter) {
-          value = float(fabs(seg_num * value - .2)); // needs to be positive for Poisson
-          *iter = value;
-        }
-        mult_proj_data_sptr->set_segment(segment);
+      SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num);
+      // fill in some crazy values
+      float value = 0;
+      for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter) {
+        value = float(fabs(seg_num * value - .2)); // needs to be positive for Poisson
+        *iter = value;
       }
+      mult_proj_data_sptr->set_segment(segment);
     }
     bin_norm_sptr.reset(new BinNormalisationFromProjData(mult_proj_data_sptr));
   }
@@ -250,17 +236,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::construct_input_data
                                                                proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone()));
   {
     for (int seg_num = proj_data_sptr->get_min_segment_num(); seg_num <= proj_data_sptr->get_max_segment_num(); ++seg_num) {
-      for (int timing_pos_num = proj_data_sptr->get_min_tof_pos_num(); timing_pos_num <= proj_data_sptr->get_max_tof_pos_num();
-           ++timing_pos_num) {
-        SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num, false, timing_pos_num);
-        // fill in some crazy values
-        float value = 0;
-        for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter) {
-          value = float(fabs(seg_num * value - .3)); // needs to be positive for Poisson
-          *iter = value;
-        }
-        add_proj_data_sptr->set_segment(segment);
+      SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num);
+      // fill in some crazy values
+      float value = 0;
+      for (SegmentByView<float>::full_iterator iter = segment.begin_all(); iter != segment.end_all(); ++iter) {
+        value = float(fabs(seg_num * value - .3)); // needs to be positive for Poisson
+        *iter = value;
       }
+      add_proj_data_sptr->set_segment(segment);
     }
   }
 

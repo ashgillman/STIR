@@ -51,12 +51,9 @@ main(int argc, char* argv[]) {
 
   for (int segment_num = out_projdata_ptr->get_min_segment_num(); segment_num <= out_projdata_ptr->get_max_segment_num();
        ++segment_num) {
-    for (int timing_pos_num = out_projdata_ptr->get_min_tof_pos_num(); timing_pos_num <= out_projdata_ptr->get_max_tof_pos_num();
-         ++timing_pos_num) {
-      SegmentByView<float> segment = in_projdata_ptr->get_segment_by_view(segment_num, timing_pos_num);
-      if (out_projdata_ptr->set_segment(segment) == Succeeded::no)
-        return EXIT_FAILURE;
-    }
+    SegmentByView<float> segment = in_projdata_ptr->get_segment_by_view(segment_num);
+    if (out_projdata_ptr->set_segment(segment) == Succeeded::no)
+      return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }

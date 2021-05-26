@@ -6,15 +6,7 @@
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -224,9 +216,6 @@ public:
     return exam_info_uptr;
   }
 
-  //! Return the status of TOF
-  bool get_tof_status() const;
-
   //! Attempts to change the number of subsets.
   /*! \return The number of subsets that will be used later, which is not
       guaranteed to be what you asked for. */
@@ -291,9 +280,6 @@ public:
 
 protected:
   int num_subsets;
-
-  //! If set TOF information will be taken into account.
-  bool use_tof;
 
   shared_ptr<GeneralisedPrior<TargetT>> prior_sptr;
 

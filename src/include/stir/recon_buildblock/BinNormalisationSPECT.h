@@ -10,8 +10,8 @@
   \author Daniel Deidda
 */
 /*
-    Copyright (C) 2019, UCL
-    Copyright (C) 2019, NPL
+    Copyright (C) 2019-2021, UCL
+    Copyright (C) 2019-2021, NPL
     See STIR/LICENSE.txt for details
 */
 
@@ -40,7 +40,7 @@ public:
   BinNormalisationSPECT(const std::string& filename);
 
   void read_norm_data(const std::string& filename);
-  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ExamInfo>& exam_info_sptr, const shared_ptr<const ProjDataInfo>&) override;
   void set_num_views(int num_views) const { this->num_views = num_views; }
 
   void set_uniformity(Array<3, float>& uniformity) { this->down_sampled_uniformity = uniformity; }
@@ -54,11 +54,11 @@ public:
 
   float get_dead_time_efficiency(const DetectionPosition<>& det_pos, const double start_time, const double end_time) const;
 
-  virtual void apply(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams) const override;
 
-  virtual void undo(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams) const override;
 
-  virtual float get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+  virtual float get_uncalibrated_bin_efficiency(const Bin& bin) const override;
 
   void read_linearity_table(Array<3, float>& linearity) const;
   void read_uniformity_table(Array<3, float>& uniformity) const;
@@ -69,9 +69,9 @@ public:
 
 protected:
   // parsing stuff
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
+  virtual void set_defaults() override;
+  virtual void initialise_keymap() override;
+  virtual bool post_processing() override;
 
   int max_tang;
   shared_ptr<ProjData> norm_proj_data_info_ptr;
@@ -91,7 +91,7 @@ protected:
   bool _use_dead_time;
   bool _use_cor_factors;
   double half_life, view_time_interval;
-  int num_detector_heads, rel_angle;
+  int num_detector_heads;
   mutable int num_views;
   mutable bool resampled;
 };

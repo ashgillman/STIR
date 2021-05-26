@@ -4,15 +4,7 @@
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -85,7 +77,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
   this->normalisation_sptr.reset(new TrivialBinNormalisation);
   this->do_time_frame = false;
-  this->use_tofsens = false;
 }
 
 template <typename TargetT>
@@ -94,7 +85,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   base_type::initialise_keymap();
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters");
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters");
-  this->parser.add_key("use time-of-flight sensitivities", &this->use_tofsens);
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr);
   this->parser.add_key("additive sinogram", &this->additive_projection_data_filename);
@@ -119,30 +109,24 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   Array<1, int> num_bins_in_subset(this->num_subsets);
   num_bins_in_subset.fill(0);
 
-  if (this->num_subsets == 1)
-    return true;
-
   for (int subset_num = 0; subset_num < this->num_subsets; ++subset_num) {
-    for (int timing_pos_num = proj_data_info_sptr->get_min_tof_pos_num();
-         timing_pos_num <= proj_data_info_sptr->get_max_tof_pos_num(); ++timing_pos_num) {
-      for (int segment_num = -this->max_ring_difference_num_to_process; segment_num <= this->max_ring_difference_num_to_process;
-           ++segment_num) {
-        for (int axial_num = proj_data_info_sptr->get_min_axial_pos_num(segment_num);
-             axial_num < proj_data_info_sptr->get_max_axial_pos_num(segment_num); axial_num++) {
-          // For debugging.
-          //                std::cout <<segment_num << " "<<  axial_num  << std::endl;
+    for (int segment_num = -this->max_ring_difference_num_to_process; segment_num <= this->max_ring_difference_num_to_process;
+         ++segment_num) {
+      for (int axial_num = proj_data_info_sptr->get_min_axial_pos_num(segment_num);
+           axial_num < proj_data_info_sptr->get_max_axial_pos_num(segment_num); axial_num++) {
+        // For debugging.
+        //                std::cout <<segment_num << " "<<  axial_num  << std::endl;
 
-          for (int tang_num = proj_data_info_sptr->get_min_tangential_pos_num();
-               tang_num < proj_data_info_sptr->get_max_tangential_pos_num(); tang_num++) {
-            for (int view_num = proj_data_info_sptr->get_min_view_num() + subset_num;
-                 view_num <= proj_data_info_sptr->get_max_view_num(); view_num += this->num_subsets) {
-              const Bin tmp_bin(segment_num, view_num, axial_num, tang_num, timing_pos_num, 1);
+        for (int tang_num = proj_data_info_sptr->get_min_tangential_pos_num();
+             tang_num < proj_data_info_sptr->get_max_tangential_pos_num(); tang_num++) {
+          for (int view_num = proj_data_info_sptr->get_min_view_num() + subset_num;
+               view_num <= proj_data_info_sptr->get_max_view_num(); view_num += this->num_subsets) {
+            const Bin tmp_bin(segment_num, view_num, axial_num, tang_num, 1);
 
-              if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin))
-                continue;
+            if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin))
+              continue;
 
-              num_bins_in_subset[subset_num] += symmetries.num_related_bins(tmp_bin);
-            }
+            num_bins_in_subset[subset_num] += symmetries.num_related_bins(tmp_bin);
           }
         }
       }
@@ -178,18 +162,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   // set projector to be used for the calculations
   this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(), target_sptr);
 
-  // this->PM_sptr->enable_tof(proj_data_info_sptr->create_shared_clone(), this->use_tof);
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
-  shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
-
-  this->projector_pair_sptr.reset(new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
-
+  this->projector_pair_sptr.reset(new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
   this->projector_pair_sptr->set_up(proj_data_info_sptr->create_shared_clone(), target_sptr);
-
-  // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
-  this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr()->clone());
-  if (!this->use_tofsens)
-    this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_non_tof_clone(), target_sptr);
 
   if (is_null_ptr(this->normalisation_sptr)) {
     warning("Invalid normalisation object");
@@ -278,9 +252,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                 (add_proj.get_min_tangential_pos_num() == proj.get_min_tangential_pos_num()) &&
                 (add_proj.get_max_tangential_pos_num() == proj.get_max_tangential_pos_num()) &&
                 add_proj.get_min_segment_num() <= proj.get_min_segment_num() &&
-                add_proj.get_max_segment_num() >= proj.get_max_segment_num() &&
-                add_proj.get_min_tof_pos_num() <= proj.get_min_tof_pos_num() &&
-                add_proj.get_max_tof_pos_num() >= proj.get_max_tof_pos_num();
+                add_proj.get_max_segment_num() >= proj.get_max_segment_num();
+
       for (int segment_num = proj.get_min_segment_num(); ok && segment_num <= proj.get_max_segment_num(); ++segment_num) {
         ok = add_proj.get_min_axial_pos_num(segment_num) <= proj.get_min_axial_pos_num(segment_num) &&
              add_proj.get_max_axial_pos_num(segment_num) >= proj.get_max_axial_pos_num(segment_num);
@@ -310,7 +283,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
   const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
-  this->sens_backprojector_sptr->start_accumulating_in_new_target();
+  this->projector_pair_sptr->get_back_projector_sptr()->start_accumulating_in_new_target();
 
   // warning: has to be same as subset scheme used as in distributable_computation
   for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num) {
@@ -323,35 +296,30 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       this->add_view_seg_to_sensitivity(view_segment_num);
     }
   }
-  this->sens_backprojector_sptr->get_output(sensitivity);
+  this->projector_pair_sptr->get_back_projector_sptr()->get_output(sensitivity);
 }
 
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::add_view_seg_to_sensitivity(
     const ViewSegmentNumbers& view_seg_nums) const {
-  int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
-  int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
-  for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num) {
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used(this->projector_pair_sptr->get_symmetries_used()->clone());
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used(this->projector_pair_sptr->get_symmetries_used()->clone());
 
-    RelatedViewgrams<float> viewgrams =
-        proj_data_info_sptr->get_empty_related_viewgrams(view_seg_nums, symmetries_used, false, timing_pos_num);
+  RelatedViewgrams<float> viewgrams = proj_data_info_sptr->get_empty_related_viewgrams(view_seg_nums, symmetries_used);
 
-    viewgrams.fill(1.F);
-    // find efficiencies
-    {
-      const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
-      const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
-      this->normalisation_sptr->undo(viewgrams, start_frame, end_frame);
-    }
-    // backproject
-    {
-      const int min_ax_pos_num = viewgrams.get_min_axial_pos_num();
-      const int max_ax_pos_num = viewgrams.get_max_axial_pos_num();
+  viewgrams.fill(1.F);
+  // find efficiencies
+  {
+    const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
+    const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
+    this->normalisation_sptr->undo(viewgrams);
+  }
+  // backproject
+  {
+    const int min_ax_pos_num = viewgrams.get_min_axial_pos_num();
+    const int max_ax_pos_num = viewgrams.get_max_axial_pos_num();
 
-      this->sens_backprojector_sptr->back_project(viewgrams, min_ax_pos_num, max_ax_pos_num);
-    }
+    this->projector_pair_sptr->get_back_projector_sptr()->back_project(viewgrams, min_ax_pos_num, max_ax_pos_num);
   }
 }
 
@@ -391,10 +359,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
   long num_used_events = 0;
   const float max_quotient = 10000.F;
 
-  // Putting the Bins here I avoid rellocation.
-  Bin measured_bin;
-  Bin fwd_bin;
-
   // go to the beginning of this frame
   //  list_mode_data_sptr->set_get_position(start_time);
   // TODO implement function that will do this for a random time
@@ -407,7 +371,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
 
   VectorWithOffset<ListModeData::SavedPosition> frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
-  long int more_events = this->do_time_frame ? 1 : (this->num_events_to_use / this->num_subsets);
+  long int more_events = this->do_time_frame ? 1 : this->num_events_to_use;
 
   while (more_events) // this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
   {
@@ -426,40 +390,31 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<
     }
 
     if (record.is_event() && record.event().is_prompt()) {
+      Bin measured_bin;
       measured_bin.set_bin_value(1.0f);
-
       record.event().get_bin(measured_bin, *proj_data_info_sptr);
 
-      // In theory we have already done all these checks so we can
-      // remove this if statement.
       if (measured_bin.get_bin_value() != 1.0f || measured_bin.segment_num() < proj_data_info_sptr->get_min_segment_num() ||
           measured_bin.segment_num() > proj_data_info_sptr->get_max_segment_num() ||
           measured_bin.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num() ||
           measured_bin.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num() ||
           measured_bin.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num()) ||
-          measured_bin.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num()) ||
-          measured_bin.timing_pos_num() < proj_data_info_sptr->get_min_tof_pos_num() ||
-          measured_bin.timing_pos_num() > proj_data_info_sptr->get_max_tof_pos_num()) {
+          measured_bin.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num())) {
         continue;
       }
 
       measured_bin.set_bin_value(1.0f);
       // If more than 1 subsets, check if the current bin belongs to
       // the current.
-
       if (this->num_subsets > 1) {
         Bin basic_bin = measured_bin;
-        if (!this->PM_sptr->get_symmetries_ptr()->is_basic(measured_bin))
-          this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
-
-        if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets)) {
+        this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
+        if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
           continue;
-        }
       }
-
-      measured_bin.set_bin_value(1.0f);
       this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
       // in_the_range++;
+      Bin fwd_bin;
       fwd_bin.set_bin_value(0.0f);
       proj_matrix_row.forward_project(fwd_bin, current_estimate);
       // additive sinogram

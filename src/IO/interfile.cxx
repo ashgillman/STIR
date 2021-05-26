@@ -4,15 +4,7 @@
     Copyright (C) 2013, 2018, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -79,7 +71,7 @@ bool
 is_interfile_signature(const char* const signature) {
   // checking for "interfile :"
   const char* pos_of_colon = strchr(signature, ':');
-  if (pos_of_colon == 0)
+  if (pos_of_colon == NULL)
     return false;
   string keyword(signature, pos_of_colon - signature);
   return (standardise_interfile_keyword(keyword) == standardise_interfile_keyword("interfile"));
@@ -925,14 +917,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
 
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
-#if 0
-  // TODO get_phi currently ignores view offset
-  const float angle_first_view = 
-    pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,0,0,0)) * float(180/_PI);
-#else
   const float angle_first_view =
-      pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180 / _PI);
-#endif
+      pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->get_intrinsic_azimuthal_tilt() * float(180 / _PI);
   const float angle_increment =
       (pdfs.get_proj_data_info_sptr()->get_phi(Bin(0, 1, 0, 0)) - pdfs.get_proj_data_info_sptr()->get_phi(Bin(0, 0, 0, 0))) *
       float(180 / _PI);
@@ -1029,6 +1015,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
   pdfs.get_proj_data_info_sptr()->get_num_tof_poss() > 1 ? output_header << "number of dimensions := 5\n"
                                                          : output_header << "number of dimensions := 4\n";
 
+  output_header << "number of dimensions := 4\n";
+
   // TODO support more ?
   {
     // default to Segment_View_AxialPos_TangPos
@@ -1036,18 +1024,17 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
     int order_of_view = 3;
     int order_of_z = 2;
     int order_of_bin = 1;
-    int order_of_timing_poss = 0;
     switch (pdfs.get_storage_order())
     /*
      {
      case ProjDataFromStream::ViewSegmentRingBin:
-   {
-     order_of_segment = 2;
-     order_of_view = 1;
-     order_of_z = 3;
-     break;
-   }
-   */
+       {
+         order_of_segment = 2;
+         order_of_view = 1;
+         order_of_z = 3;
+         break;
+       }
+       */
     {
     case ProjDataFromStream::Segment_View_AxialPos_TangPos: {
       order_of_segment = 4;
@@ -1061,23 +1048,10 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
       order_of_z = 3;
       break;
     }
-    case ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos: {
-      order_of_timing_poss = 5;
-      order_of_segment = 4;
-      order_of_view = 3;
-      order_of_z = 2;
-      break;
-    }
     default: {
       error("write_interfile_PSOV_header: unsupported storage order, "
             "defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
     }
-    }
-
-    if (order_of_timing_poss > 0) {
-      output_header << "matrix axis label [" << order_of_timing_poss << "] := timing positions\n";
-      output_header << "!matrix size [" << order_of_timing_poss << "] := " << pdfs.get_timing_poss_sequence_in_stream().size()
-                    << "\n";
     }
 
     output_header << "matrix axis label [" << order_of_segment << "] := segment\n";
@@ -1099,15 +1073,6 @@ write_basic_interfile_PDFS_header(const string& header_file_name, const string& 
     output_header << "matrix axis label [" << order_of_bin << "] := tangential coordinate\n";
     output_header << "!matrix size [" << order_of_bin << "] := " << pdfs.get_proj_data_info_sptr()->get_num_tangential_poss()
                   << "\n";
-
-    // If TOF is supported; add this in the header.
-    if (pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->is_tof_ready() &&
-        pdfs.get_proj_data_info_sptr()->get_num_tof_poss() > 1) {
-      // Moved in scanner section
-      //    output_header << "%number of TOF time bins :=" <<
-      //                     pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_max_of_timing_bins()  << "\n";
-      output_header << "%TOF mashing factor := " << pdfs.get_proj_data_info_sptr()->get_tof_mash_factor() << "\n";
-    }
   }
 
   const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =

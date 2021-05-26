@@ -15,15 +15,7 @@
     Copyright (C) 2018-2019 University of Leeds
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -111,8 +103,7 @@ ProjDataGEHDF5::initialise_ax_pos_offset() {
 }
 
 Viewgram<float>
-ProjDataGEHDF5::get_viewgram(const int view_num, const int segment_num, const bool make_num_tangential_poss_odd,
-                             const int timing_pos) const {
+ProjDataGEHDF5::get_viewgram(const int view_num, const int segment_num, const bool make_num_tangential_poss_odd) const {
   if (make_num_tangential_poss_odd)
     error("make_num_tangential_poss_odd not supported by ProjDataGEHDF5");
   Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num);
@@ -178,8 +169,7 @@ ProjDataGEHDF5::set_viewgram(const Viewgram<float>& v) {
 }
 
 Sinogram<float>
-ProjDataGEHDF5::get_sinogram(const int ax_pos_num, const int segment_num, const bool make_num_tangential_poss_odd,
-                             const int timing_pos) const {
+ProjDataGEHDF5::get_sinogram(const int ax_pos_num, const int segment_num, const bool make_num_tangential_poss_odd) const {
   // TODO
   error("ProjDataGEHDF5::get_sinogram not implemented yet");
   return get_empty_sinogram(ax_pos_num, segment_num);

@@ -22,15 +22,7 @@
     Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -116,12 +108,6 @@ public:
   void forward_project(RelatedViewgrams<float>&, const int min_axial_pos_num, const int max_axial_pos_num,
                        const int min_tangential_pos_num, const int max_tangential_pos_num);
 
-#if 0 // disabled as currently not used. needs to be written in the new style anyway
-    //! function mainly used in ListMode reconstruction.
-    /*! Calls actual_forward_project */
-    void forward_project(Bin&,
-                         const DiscretisedDensity<3,float>&);
-#endif
   virtual ~ForwardProjectorByBin();
 
   /// Set input
@@ -140,12 +126,6 @@ protected:
                                       const int max_axial_pos_num, const int min_tangential_pos_num,
                                       const int max_tangential_pos_num);
 
-#if 0 // disabled as currently not used. needs to be written in the new style anyway
-    //! This virtual function has to be implemented by the derived class.
-    virtual void actual_forward_project(Bin&,
-                                        const DiscretisedDensity<3,float>&) = 0;
-#endif
-
   //! check if the argument is the same as what was used for set_up()
   /*! calls error() if anything is wrong.
 
@@ -161,7 +141,8 @@ protected:
   virtual void set_defaults();
   virtual void initialise_keymap();
 
-private:
+protected:
+  //! ProjDataInfo set by set_up()
   shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 };
 

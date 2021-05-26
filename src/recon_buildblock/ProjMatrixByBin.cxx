@@ -5,7 +5,6 @@
 
   \brief  implementation of the stir::ProjMatrixByBin class
 
-  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -18,15 +17,7 @@
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -47,8 +38,6 @@ void
 ProjMatrixByBin::set_defaults() {
   cache_disabled = false;
   cache_stores_only_basic_bins = true;
-  gauss_sigma_in_mm = 0.f;
-  r_sqrt2_gauss_sigma = 0.f;
 }
 
 void
@@ -67,17 +56,6 @@ ProjMatrixByBin::ProjMatrixByBin() { set_defaults(); }
 void
 ProjMatrixByBin::enable_cache(const bool v) {
   cache_disabled = !v;
-}
-
-void
-ProjMatrixByBin::enable_tof(const shared_ptr<const ProjDataInfo>& _proj_data_info_sptr, const bool v) {
-  if (v) {
-    tof_enabled = true;
-    proj_data_info_sptr = _proj_data_info_sptr;
-    gauss_sigma_in_mm =
-        ProjDataInfo::tof_delta_time_to_mm(proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution()) / 2.355f;
-    r_sqrt2_gauss_sigma = 1.0f / (gauss_sigma_in_mm * static_cast<float>(sqrt(2.0)));
-  }
 }
 
 void
@@ -153,8 +131,8 @@ ProjMatrixByBin::set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_spt
 
 /*!
     \warning Preconditions
-    <li>abs(axial_pos_num) fits in 17 bits
-    <li>abs(tangential_pos_num) fits in 11 bits
+    <li>abs(axial_pos_num) fits in 17 bits</li>
+    <li>abs(tangential_pos_num) fits in 11 bits</li>
   */
 ProjMatrixByBin::CacheKey
 ProjMatrixByBin::cache_key(const Bin& bin) const {

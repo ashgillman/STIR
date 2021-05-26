@@ -17,15 +17,7 @@
     Copyright (C) 2015, 2018-2019, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -177,20 +169,16 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
     // note: older versions of openmp need an int as loop
     for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i) {
       const ViewSegmentNumbers vs = vs_nums_to_process[i];
-
-      for (int k = proj_data.get_proj_data_info_sptr()->get_min_tof_pos_num();
-           k <= proj_data.get_proj_data_info_sptr()->get_max_tof_pos_num(); ++k) {
 #ifdef STIR_OPENMP
-        RelatedViewgrams<float> viewgrams;
+      RelatedViewgrams<float> viewgrams;
 #  pragma omp critical(BACKPROJECTORBYBIN_GETVIEWGRAMS)
-        viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);
+      viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr);
 #else
-        const RelatedViewgrams<float> viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);
+      const RelatedViewgrams<float> viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr);
 #endif
 
-        info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
-        back_project(viewgrams);
-      }
+      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num(), 2);
+      back_project(viewgrams);
     }
   }
 #ifdef STIR_OPENMP

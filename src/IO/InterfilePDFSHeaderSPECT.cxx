@@ -3,15 +3,7 @@
     Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -146,21 +138,16 @@ InterfilePDFSHeaderSPECT::post_processing() {
   const int num_axial_crystals_per_singles_unit = -1;
   const int num_transaxial_crystals_per_singles_unit = -1;
   const int num_detector_layers = 1;
-  const float energy_resolution = -1.f;
-  const float reference_energy = -1.f;
-  const short int max_num_of_timing_poss = 1;
-  const float size_timing_pos = -1.f;
-  const float timing_resolution = -1.f;
 
   shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
-  shared_ptr<Scanner> scanner_ptr_from_file(new Scanner(
-      guessed_scanner_ptr->get_type(), get_exam_info_sptr()->originating_system, num_detectors_per_ring, num_rings,
-      max_num_non_arccorrected_bins, default_num_arccorrected_bins, static_cast<float>(radii[0]),
-      static_cast<float>(average_depth_of_interaction_in_cm * 10), static_cast<float>(distance_between_rings_in_cm * 10.),
-      static_cast<float>(default_bin_size_in_cm * 10), static_cast<float>(view_offset_in_degrees * _PI / 180),
-      num_axial_blocks_per_bucket, num_transaxial_blocks_per_bucket, num_axial_crystals_per_block,
-      num_transaxial_crystals_per_block, num_axial_crystals_per_singles_unit, num_transaxial_crystals_per_singles_unit,
-      num_detector_layers, energy_resolution, reference_energy, max_num_of_timing_poss, size_timing_pos, timing_resolution));
+  shared_ptr<Scanner> scanner_ptr_from_file(
+      new Scanner(guessed_scanner_ptr->get_type(), get_exam_info().originating_system, num_detectors_per_ring, num_rings,
+                  max_num_non_arccorrected_bins, default_num_arccorrected_bins, static_cast<float>(radii[0]),
+                  static_cast<float>(average_depth_of_interaction_in_cm * 10),
+                  static_cast<float>(distance_between_rings_in_cm * 10.), static_cast<float>(default_bin_size_in_cm * 10),
+                  static_cast<float>(view_offset_in_degrees * _PI / 180), num_axial_blocks_per_bucket,
+                  num_transaxial_blocks_per_bucket, num_axial_crystals_per_block, num_transaxial_crystals_per_block,
+                  num_axial_crystals_per_singles_unit, num_transaxial_crystals_per_singles_unit, num_detector_layers));
 #if 0
   if (default_bin_size_in_cm <= 0)
     default_bin_size_in_cm =

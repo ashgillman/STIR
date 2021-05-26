@@ -16,15 +16,7 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -117,11 +109,10 @@ ForwardProjectorByBinUsingProjMatrixByBin::actual_forward_project(RelatedViewgra
       Viewgram<float>& viewgram = *r_viewgrams_iter;
       const int view_num = viewgram.get_view_num();
       const int segment_num = viewgram.get_segment_num();
-      const int timing_num = viewgram.get_timing_pos_num();
 
       for (int tang_pos = min_tangential_pos_num; tang_pos <= max_tangential_pos_num; ++tang_pos)
         for (int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num; ++ax_pos) {
-          Bin bin(segment_num, view_num, ax_pos, tang_pos, timing_num, 0.f);
+          Bin bin(segment_num, view_num, ax_pos, tang_pos, 0);
           proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
           proj_matrix_row.forward_project(bin, image);
           viewgram[ax_pos][tang_pos] = bin.get_bin_value();
@@ -129,7 +120,6 @@ ForwardProjectorByBinUsingProjMatrixByBin::actual_forward_project(RelatedViewgra
       ++r_viewgrams_iter;
     }
   } else {
-    error("Need to do TOF stuff here");
     // Complicated version which handles the symmetries explicitly.
     // Faster when no caching is performed, about just as fast when there is caching,
     // but of only basic bins.
@@ -146,8 +136,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::actual_forward_project(RelatedViewgra
         if (already_processed[ax_pos][tang_pos])
           continue;
 
-        Bin basic_bin(viewgrams.get_basic_segment_num(), viewgrams.get_basic_view_num(), ax_pos, tang_pos,
-                      viewgrams.get_basic_timing_pos_num());
+        Bin basic_bin(viewgrams.get_basic_segment_num(), viewgrams.get_basic_view_num(), ax_pos, tang_pos);
         symmetries->find_basic_bin(basic_bin);
 
         proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, basic_bin);
@@ -176,8 +165,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::actual_forward_project(RelatedViewgra
                ++viewgram_iter) {
             Viewgram<float>& viewgram = *viewgram_iter;
             proj_matrix_row_copy = proj_matrix_row;
-            Bin bin(viewgram_iter->get_segment_num(), viewgram_iter->get_view_num(), axial_pos_tmp, tang_pos_tmp,
-                    viewgram_iter->get_timing_pos_num());
+            Bin bin(viewgram_iter->get_segment_num(), viewgram_iter->get_view_num(), axial_pos_tmp, tang_pos_tmp);
 
             unique_ptr<SymmetryOperation> symm_op_ptr = symmetries->find_symmetry_operation_from_basic_bin(bin);
             assert(bin == basic_bin);

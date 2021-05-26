@@ -6,15 +6,7 @@
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -125,40 +117,34 @@ main(int argc, char* argv[]) {
   if (print_min || print_max || print_sum) {
     const int min_segment_num = proj_data_sptr->get_min_segment_num();
     const int max_segment_num = proj_data_sptr->get_max_segment_num();
-    const int min_timing_num = proj_data_sptr->get_min_tof_pos_num();
-    const int max_timing_num = proj_data_sptr->get_max_tof_pos_num();
-
-    for (int timing_num = min_timing_num; timing_num <= max_timing_num; ++timing_num) {
-      std::cout << "\nTOF bin: " << timing_num;
-      bool accumulators_initialized = false;
-      float accum_min =
-          std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
-      float accum_max = std::numeric_limits<float>::min();
-      double sum = 0.;
-      for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num) {
-        const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num, timing_num));
-        const float this_max = seg.find_max();
-        const float this_min = seg.find_min();
-        sum += static_cast<double>(seg.sum());
-        if (!accumulators_initialized) {
+    bool accumulators_initialized = false;
+    float accum_min =
+        std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
+    float accum_max = std::numeric_limits<float>::min();
+    double sum = 0.;
+    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num) {
+      const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num));
+      const float this_max = seg.find_max();
+      const float this_min = seg.find_min();
+      sum += static_cast<double>(seg.sum());
+      if (!accumulators_initialized) {
+        accum_max = this_max;
+        accum_min = this_min;
+        accumulators_initialized = true;
+      } else {
+        if (accum_max < this_max)
           accum_max = this_max;
+        if (accum_min > this_min)
           accum_min = this_min;
-          accumulators_initialized = true;
-        } else {
-          if (accum_max < this_max)
-            accum_max = this_max;
-          if (accum_min > this_min)
-            accum_min = this_min;
-        }
       }
-      if (print_min)
-        std::cout << "\nData min: " << accum_min;
-      if (print_max)
-        std::cout << "\nData max: " << accum_max;
-      if (print_sum)
-        std::cout << "\nData sum: " << sum;
-      std::cout << "\n";
     }
+    if (print_min)
+      std::cout << "\nData min: " << accum_min;
+    if (print_max)
+      std::cout << "\nData max: " << accum_max;
+    if (print_sum)
+      std::cout << "\nData sum: " << sum;
+    std::cout << "\n";
   }
   return EXIT_SUCCESS;
 }

@@ -4,15 +4,7 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -83,14 +75,10 @@ public:
     for (unsigned int frame_num = 1; frame_num <= this->get_time_frame_definitions().get_num_frames(); ++frame_num)
       for (int segment_num = (this->_proj_datas[frame_num - 1])->get_min_segment_num();
            segment_num <= (this->_proj_datas[frame_num - 1])->get_max_segment_num(); ++segment_num) {
-        for (int timing_pos_num = (this->_proj_datas[frame_num - 1])->get_min_tof_pos_num();
-             timing_pos_num <= (this->_proj_datas[frame_num - 1])->get_max_tof_pos_num(); ++timing_pos_num) {
-          SegmentByView<float> segment_by_view(
-              (*(this->_proj_datas[frame_num - 1])).get_segment_by_view(segment_num, timing_pos_num));
-          segment_by_view *= cal_factor;
-          if ((*(this->_proj_datas[frame_num - 1])).set_segment(segment_by_view) == Succeeded::no) {
-            error("DynamicProjData:calibrate_frames failed because set_segment_by_view failed");
-          }
+        SegmentByView<float> segment_by_view((*(this->_proj_datas[frame_num - 1])).get_segment_by_view(segment_num));
+        segment_by_view *= cal_factor;
+        if ((*(this->_proj_datas[frame_num - 1])).set_segment(segment_by_view) == Succeeded::no) {
+          error("DynamicProjData:calibrate_frames failed because set_segment_by_view failed");
         }
       }
   }
@@ -102,14 +90,10 @@ public:
     for (unsigned int frame_num = 1; frame_num <= this->get_time_frame_definitions().get_num_frames(); ++frame_num)
       for (int segment_num = (this->_proj_datas[frame_num - 1])->get_min_segment_num();
            segment_num <= (this->_proj_datas[frame_num - 1])->get_max_segment_num(); ++segment_num) {
-        for (int timing_pos_num = (this->_proj_datas[frame_num - 1])->get_min_tof_pos_num();
-             timing_pos_num <= (this->_proj_datas[frame_num - 1])->get_max_tof_pos_num(); ++timing_pos_num) {
-          SegmentByView<float> segment_by_view =
-              (*(this->_proj_datas[frame_num - 1])).get_segment_by_view(segment_num, timing_pos_num);
-          segment_by_view /= static_cast<float>(this->get_time_frame_definitions().get_duration(frame_num));
-          if ((*(this->_proj_datas[frame_num - 1])).set_segment(segment_by_view) == Succeeded::no) {
-            error("DynamicProjData:calibrate_frames failed because set_segment_by_view failed");
-          }
+        SegmentByView<float> segment_by_view = (*(this->_proj_datas[frame_num - 1])).get_segment_by_view(segment_num);
+        segment_by_view /= static_cast<float>(this->get_time_frame_definitions().get_duration(frame_num));
+        if ((*(this->_proj_datas[frame_num - 1])).set_segment(segment_by_view) == Succeeded::no) {
+          error("DynamicProjData:calibrate_frames failed because set_segment_by_view failed");
         }
       }
   }

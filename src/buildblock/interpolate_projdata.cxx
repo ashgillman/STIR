@@ -5,15 +5,7 @@
   Copyright (C) 2011-07-01 - 2011, Kris Thielemans
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -139,7 +131,7 @@ make_non_interleaved_segment(SegmentBySinogram<float>& out_segment, const Segmen
 static SegmentBySinogram<float>
 make_non_interleaved_segment(const ProjDataInfo& non_interleaved_proj_data_info, const SegmentBySinogram<float>& in_segment) {
   SegmentBySinogram<float> out_segment =
-      non_interleaved_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num(), in_segment.get_timing_pos_num());
+      non_interleaved_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num());
 
   make_non_interleaved_segment(out_segment, in_segment);
   return out_segment;
@@ -197,8 +189,8 @@ interpolate_projdata(ProjData& proj_data_out, const ProjData& proj_data_in,
 
   const float out_sampling_phi = proj_data_out_info.get_phi(Bin(0, 1, 0, 0)) - proj_data_out_info.get_phi(Bin(0, 0, 0, 0));
 
-  const float out_view_offset = use_view_offset ? proj_data_out_info.get_scanner_ptr()->get_default_intrinsic_tilt() : 0.F;
-  const float in_view_offset = use_view_offset ? proj_data_in_info.get_scanner_ptr()->get_default_intrinsic_tilt() : 0.F;
+  const float out_view_offset = use_view_offset ? proj_data_out_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt() : 0.F;
+  const float in_view_offset = use_view_offset ? proj_data_in_info.get_scanner_ptr()->get_intrinsic_azimuthal_tilt() : 0.F;
   offset[2] = (proj_data_in_info.get_phi(Bin(0, 0, 0, 0)) + in_view_offset - proj_data_out_info.get_phi(Bin(0, 0, 0, 0)) -
                out_view_offset) /
               in_sampling_phi;

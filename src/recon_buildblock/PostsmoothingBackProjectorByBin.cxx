@@ -13,15 +13,7 @@
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -58,31 +50,6 @@ PostsmoothingBackProjectorByBin::post_processing() {
 }
 
 PostsmoothingBackProjectorByBin::PostsmoothingBackProjectorByBin() { set_defaults(); }
-
-void
-PostsmoothingBackProjectorByBin::update_filtered_density_image(DiscretisedDensity<3, float>& density) {
-  //        image_processor_ptr->apply(*filtered_density_sptr);
-  //        density += *filtered_density_sptr;
-  //        filtered_density_sptr->fill(0.f);
-}
-
-BackProjectorByBin*
-PostsmoothingBackProjectorByBin::get_original_back_projector_ptr() const {
-  return original_back_projector_ptr.get();
-}
-
-PostsmoothingBackProjectorByBin*
-PostsmoothingBackProjectorByBin::clone() const {
-  PostsmoothingBackProjectorByBin* sptr(new PostsmoothingBackProjectorByBin(*this));
-  //    sptr->original_back_projector_ptr.reset(this->original_back_projector_ptr->clone());
-  return sptr;
-}
-
-void
-PostsmoothingBackProjectorByBin::init_filtered_density_image(DiscretisedDensity<3, float>& density) {
-  filtered_density_sptr.reset(density.get_empty_discretised_density());
-  assert(density.get_index_range() == filtered_density_sptr->get_index_range());
-}
 
 PostsmoothingBackProjectorByBin::PostsmoothingBackProjectorByBin(
     const shared_ptr<BackProjectorByBin>& original_back_projector_ptr,

@@ -1,17 +1,9 @@
 /*
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2021 UCL
     Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -59,24 +51,32 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
 
 Succeeded
 InputStreamFromROOTFileForCylindricalPET::get_next_record(CListRecordROOT& record) {
-
   while (true) {
     if (current_position == nentries)
       return Succeeded::no;
 
-    if (stream_ptr->GetEntry(static_cast<Long64_t>(current_position)) == 0)
-      return Succeeded::no;
-
+    Long64_t brentry = stream_ptr->LoadTree(static_cast<Long64_t>(current_position));
     current_position++;
 
-    if ((this->comptonphantom1 > 0 || this->comptonphantom2 > 0) && this->exclude_scattered)
+    if (!this->check_brentry_randoms_scatter_energy_conditions(brentry))
       continue;
-    if ((this->eventID1 != this->eventID2) && this->exclude_randoms)
-      continue;
-    // multiply here by 1000 to convert the list mode energy from MeV to keV
-    if (this->get_energy1_in_keV() < this->low_energy_window || this->get_energy1_in_keV() > this->up_energy_window ||
-        this->get_energy2_in_keV() < this->low_energy_window || this->get_energy2_in_keV() > this->up_energy_window)
-      continue;
+
+    // Get time information
+    GetEntryCheck(br_time1->GetEntry(brentry));
+    GetEntryCheck(br_time2->GetEntry(brentry));
+
+    // Get positional ID information
+    GetEntryCheck(br_crystalID1->GetEntry(brentry));
+    GetEntryCheck(br_crystalID2->GetEntry(brentry));
+
+    GetEntryCheck(br_submoduleID1->GetEntry(brentry));
+    GetEntryCheck(br_submoduleID2->GetEntry(brentry));
+
+    GetEntryCheck(br_moduleID1->GetEntry(brentry));
+    GetEntryCheck(br_moduleID2->GetEntry(brentry));
+
+    GetEntryCheck(br_rsectorID1->GetEntry(brentry));
+    GetEntryCheck(br_rsectorID2->GetEntry(brentry));
 
     break;
   }
@@ -101,17 +101,14 @@ InputStreamFromROOTFileForCylindricalPET::get_next_record(CListRecordROOT& recor
 
   // GATE counts crystal ID =0 the most negative. Therefore
   // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
-  // Moved to post_processings().
-  // crystal1 -= half_block;
-  // crystal2 -= half_block;
+  crystal1 -= half_block;
+  crystal2 -= half_block;
 
   // Add offset
   crystal1 += offset_dets;
   crystal2 += offset_dets;
 
-  double delta_timing_bin = (time2 - time1) * least_significant_clock_bit;
-
-  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1, delta_timing_bin, eventID1, eventID2);
+  return record.init_from_data(ring1, ring2, crystal1, crystal2, time1, time2, eventID1, eventID2);
 }
 
 std::string
@@ -166,24 +163,18 @@ InputStreamFromROOTFileForCylindricalPET::set_up(const std::string& header_path)
     return Succeeded::no;
   }
 
-  stream_ptr->SetBranchAddress("crystalID1", &crystalID1);
-  stream_ptr->SetBranchAddress("crystalID2", &crystalID2);
-  stream_ptr->SetBranchAddress("submoduleID1", &submoduleID1);
-  stream_ptr->SetBranchAddress("submoduleID2", &submoduleID2);
-  stream_ptr->SetBranchAddress("moduleID1", &moduleID1);
-  stream_ptr->SetBranchAddress("moduleID2", &moduleID2);
-  stream_ptr->SetBranchAddress("rsectorID1", &rsectorID1);
-  stream_ptr->SetBranchAddress("rsectorID2", &rsectorID2);
+  stream_ptr->SetBranchAddress("crystalID1", &crystalID1, &br_crystalID1);
+  stream_ptr->SetBranchAddress("crystalID2", &crystalID2, &br_crystalID2);
+  stream_ptr->SetBranchAddress("submoduleID1", &submoduleID1, &br_submoduleID1);
+  stream_ptr->SetBranchAddress("submoduleID2", &submoduleID2, &br_submoduleID2);
+  stream_ptr->SetBranchAddress("moduleID1", &moduleID1, &br_moduleID1);
+  stream_ptr->SetBranchAddress("moduleID2", &moduleID2, &br_moduleID2);
+  stream_ptr->SetBranchAddress("rsectorID1", &rsectorID1, &br_rsectorID1);
+  stream_ptr->SetBranchAddress("rsectorID2", &rsectorID2, &br_rsectorID2);
 
   nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
   if (nentries == 0)
     error("InputStreamFromROOTFileForCylindricalPET: The total number of entries in the ROOT file is zero. Abort.");
-
-  half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
-  if (half_block < 0)
-    half_block = 0;
-
-  offset_dets -= half_block;
 
   return Succeeded::yes;
 }

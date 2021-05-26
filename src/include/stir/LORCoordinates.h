@@ -17,15 +17,7 @@
     Copyright (C) 2011-07-01 - 2013, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -66,9 +58,6 @@ public:
   virtual ~LOR() {}
 
   virtual LOR* clone() const = 0;
-
-  //! Return if the LOR direction is opposite from normal.
-  virtual bool is_swapped() const = 0;
 
   virtual Succeeded change_representation(LORInCylinderCoordinates<coordT>&, const double radius) const = 0;
   virtual Succeeded change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&, const double radius) const = 0;
@@ -157,7 +146,7 @@ protected:
   }
   coordT _radius;
 
-private:
+protected:
   coordT _z1;
   coordT _z2;
 };
@@ -177,11 +166,6 @@ public:
   const PointOnCylinder<coordT>& p2() const { return _p2; }
   PointOnCylinder<coordT>& p2() { return _p2; }
 
-  //! \copybrief LOR::is_swapped()
-  /*! In this class, this currently always return \c false. You can swap the points if
-      you want to swap the direction of the LOR.
-  */
-  bool is_swapped() const { return false; }
   void reset(coordT radius = 1) {
     // set psi such that the new LOR does intersect that cylinder
     _p1.psi() = 0;
@@ -273,12 +257,6 @@ public:
     return new self_type(*this);
   }
 
-  //! \copybrief LOR::is_swapped()
-  /*! In this class, this currently always return \c false. You can swap the points if
-  you want to swap the direction of the LOR.
-  */
-  bool is_swapped() const { return false; }
-
   virtual Succeeded change_representation(LORInCylinderCoordinates<coordT>&, const double radius) const;
   virtual Succeeded change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&, const double radius) const;
   virtual Succeeded change_representation(LORInAxialAndSinogramCoordinates<coordT>&, const double radius) const;
@@ -345,14 +323,7 @@ public:
     check_state();
     return asin(_s / private_base_type::_radius);
   }
-  bool is_swapped() const {
-    check_state();
-    return _swapped;
-  }
-  bool is_swapped() {
-    check_state();
-    return _swapped;
-  }
+
   inline explicit LORInAxialAndSinogramCoordinates(const coordT radius = 1);
 
   //! Constructor from explicit arguments
@@ -361,7 +332,7 @@ public:
     order of arguments is easily made.
   */
   inline LORInAxialAndSinogramCoordinates(const coordT z1, const coordT z2, const coordT phi, const coordT s,
-                                          const coordT radius = 1, const bool swapped = false);
+                                          const coordT radius = 1);
 
   inline LORInAxialAndSinogramCoordinates(const LORInCylinderCoordinates<coordT>&);
 
@@ -409,7 +380,6 @@ public:
 private:
   coordT _phi;
   coordT _s;
-  bool _swapped;
 };
 
 /*! \ingroup LOR
@@ -464,14 +434,6 @@ public:
     check_state();
     return _beta;
   }
-  bool is_swapped() const {
-    check_state();
-    return _swapped;
-  }
-  bool is_swapped() {
-    check_state();
-    return _swapped;
-  }
 
   coordT s() const {
     check_state();
@@ -506,7 +468,7 @@ public:
     order of arguments is easily made.
   */
   inline LORInAxialAndNoArcCorrSinogramCoordinates(const coordT z1, const coordT z2, const coordT phi, const coordT beta,
-                                                   const coordT radius = 1, const bool swapped = false);
+                                                   const coordT radius = 1);
 
   inline LORInAxialAndNoArcCorrSinogramCoordinates(const LORInCylinderCoordinates<coordT>&);
 

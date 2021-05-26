@@ -5,15 +5,7 @@
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -63,12 +55,10 @@ public:
   typedef typename Segment<elemT>::StorageOrder StorageOrder;
 
   //! Constructor that sets the data to a given 3d Array
-  SegmentBySinogram(const Array<3, elemT>& v, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, const int segment_num,
-                    const int timing_pos_num = 0);
+  SegmentBySinogram(const Array<3, elemT>& v, const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, const int segment_num);
 
   //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
-  SegmentBySinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, const int segment_num,
-                    const int timing_pos_num = 0);
+  SegmentBySinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v, const int segment_num);
 
   //! Conversion from 1 storage order to the other
   SegmentBySinogram(const SegmentByView<elemT>&);

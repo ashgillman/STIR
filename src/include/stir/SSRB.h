@@ -14,15 +14,7 @@
     Copyright (C) 2021, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -121,7 +113,6 @@ void SSRB(const std::string& output_filename, const ProjData& in_projdata, const
   corresponding to how many input sinograms contribute to them.
 
   \warning in_proj_data_info has to be (at least) of type ProjDataInfoCylindrical
-  \warning TOF info has to match currently. If it doesn't, error() will be called.
 */
 void SSRB(ProjData& out_projdata, const ProjData& in_projdata, const bool do_normalisation = true);
 

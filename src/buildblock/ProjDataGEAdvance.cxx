@@ -15,15 +15,7 @@
     Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -123,8 +115,7 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
 }
 
 Viewgram<float>
-ProjDataGEAdvance::get_viewgram(const int view_num, const int segment_num, const bool make_num_tangential_poss_odd,
-                                const int timing_pos) const {
+ProjDataGEAdvance::get_viewgram(const int view_num, const int segment_num, const bool make_num_tangential_poss_odd) const {
   // --------------------------------------------------------
   // --------------------------------------------------------
   // 	Advance GE format reader with sort of the segments
@@ -262,8 +253,7 @@ ProjDataGEAdvance::set_viewgram(const Viewgram<float>& v) {
 }
 
 Sinogram<float>
-ProjDataGEAdvance::get_sinogram(const int ax_pos_num, const int segment_num, const bool make_num_tangential_poss_odd,
-                                const int timing_pos) const {
+ProjDataGEAdvance::get_sinogram(const int ax_pos_num, const int segment_num, const bool make_num_tangential_poss_odd) const {
   // TODO
   error("ProjDataGEAdvance::get_sinogram not implemented yet\n");
   return get_empty_sinogram(ax_pos_num, segment_num);

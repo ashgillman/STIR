@@ -5,15 +5,7 @@
     Copyright (C) 2013, 2016, 2018, 2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -155,11 +147,14 @@ InterfileHeader::InterfileHeader() : MinimalInterfileHeader() {
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
   data_offset = 0UL;
+  calibration_factor = -1;
 
   add_key("name of data file", &data_file_name);
   add_key("originating system", &exam_info_sptr->originating_system);
   ignore_key("GENERAL DATA");
   ignore_key("GENERAL IMAGE DATA");
+
+  add_key("calibration factor", &calibration_factor);
   add_key("isotope name", &isotope_name);
   add_key("study date", &study_date_time.date);
   add_key("study_time", &study_date_time.time);
@@ -231,6 +226,9 @@ InterfileHeader::post_processing() {
     } catch (...) {
     }
   }
+
+  //  if(this->calibration_factor>0)
+  this->exam_info_sptr->set_calibration_factor(calibration_factor);
 
   if (!isotope_name.empty()) {
     this->exam_info_sptr->set_radionuclide(isotope_name);
@@ -405,8 +403,6 @@ InterfileImageHeader::InterfileImageHeader() : InterfileHeader() {
           &num_image_data_types);
   add_key("index nesting level", &index_nesting_level);
   add_vectorised_key("image data type description", &image_data_type_description);
-
-  add_key("calibration factor", &calibration_factor);
 }
 
 void
@@ -435,8 +431,6 @@ InterfileImageHeader::post_processing() {
 
   if (InterfileHeader::post_processing() == true)
     return true;
-
-  this->exam_info_sptr->set_calibration_factor(calibration_factor);
 
   if (PET_data_type_values[PET_data_type_index] != "Image") {
     warning("Interfile error: expecting an image\n");
@@ -524,15 +518,6 @@ InterfilePDFSHeader::InterfilePDFSHeader() : InterfileHeader() {
   reference_energy = -1.f;
   add_key("Reference energy (in keV)", &reference_energy);
 
-  tof_mash_factor = -1;
-  add_key("%TOF mashing factor", &tof_mash_factor);
-  max_num_timing_poss = -1;
-  add_key("Number of TOF time bins", &max_num_timing_poss);
-  size_of_timing_pos = -1.f;
-  add_key("Size of timing bin (ps)", &size_of_timing_pos);
-  timing_resolution = -1.f;
-  add_key("Timing resolution (ps)", &timing_resolution);
-
   ignore_key("end scanner parameters");
 
   effective_central_bin_size_in_cm = -1;
@@ -564,8 +549,8 @@ InterfilePDFSHeader::find_storage_order() {
 
         }
 */
-  if (num_dimensions != 4 && num_dimensions != 5) {
-    warning("Interfile error: expecting 4D structure or 5D in case of TOF information ");
+  if (num_dimensions != 4) {
+    warning("Interfile error: expecting 4D structure ");
     stop_parsing();
     return true;
   }
@@ -582,27 +567,13 @@ InterfilePDFSHeader::find_storage_order() {
     num_segments = matrix_size[3][0];
 
     if (matrix_labels[1] == "axial coordinate" && matrix_labels[2] == "view") {
-      // If TOF information is in there
-      if (matrix_labels.size() > 4) {
-        if (matrix_labels[4] == "timing positions") {
-          num_timing_poss = matrix_size[4][0];
-          storage_order = ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos;
-          num_views = matrix_size[2][0];
+      storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
+      num_views = matrix_size[2][0];
 #ifdef _MSC_VER
-          num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
+      num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
 #else
-          num_rings_per_segment = matrix_size[1];
+      num_rings_per_segment = matrix_size[1];
 #endif
-        }
-      } else {
-        storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
-        num_views = matrix_size[2][0];
-#ifdef _MSC_VER
-        num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
-#else
-        num_rings_per_segment = matrix_size[1];
-#endif
-      }
     } else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial coordinate") {
       storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
       num_views = matrix_size[1][0];
@@ -790,7 +761,6 @@ find_segment_sequence(vector<int>& segment_sequence, VectorWithOffset<int>& sort
 }
 
 // MJ 17/05/2000 made bool
-// NE 28/12/2016 Accounts for TOF stuff.
 bool
 InterfilePDFSHeader::post_processing() {
 
@@ -1075,24 +1045,6 @@ InterfilePDFSHeader::post_processing() {
       }
     }
 
-    if (guessed_scanner_ptr->is_tof_ready()) {
-      if (max_num_timing_poss != guessed_scanner_ptr->get_max_num_timing_poss()) {
-        warning("Interfile warning: 'Number of TOF time bins' (%d) is expected to be %d.", max_num_timing_poss,
-                guessed_scanner_ptr->get_max_num_timing_poss());
-        mismatch_between_header_and_guess = true;
-      }
-      if (size_of_timing_pos != guessed_scanner_ptr->get_size_of_timing_pos()) {
-        warning("Interfile warning: 'Size of timing bin (ps)' (%f) is expected to be %f.", size_of_timing_pos,
-                guessed_scanner_ptr->get_size_of_timing_pos());
-        mismatch_between_header_and_guess = true;
-      }
-      if (timing_resolution != guessed_scanner_ptr->get_timing_resolution()) {
-        warning("Interfile warning: 'Timing resolution (ps)' (%f) is expected to be %f.", timing_resolution,
-                guessed_scanner_ptr->get_timing_resolution());
-        mismatch_between_header_and_guess = true;
-      }
-    }
-
     // end of checks. If they failed, we ignore the guess
     if (mismatch_between_header_and_guess) {
       warning("Interfile warning: I have used all explicit settings for the scanner\n"
@@ -1104,86 +1056,92 @@ InterfilePDFSHeader::post_processing() {
     }
   }
 
-  if (guessed_scanner_ptr->get_type() == Scanner::Unknown_scanner ||
-      guessed_scanner_ptr->get_type() == Scanner::User_defined_scanner) {
-    // warn if the Interfile header does not provide enough info
+  // end of checks. If they failed, we ignore the guess
+  if (mismatch_between_header_and_guess) {
+    warning("Interfile warning: I have used all explicit settings for the scanner\n"
+            "\tfrom the Interfile header, and remaining fields set from the\n"
+            "\t%s model.\n",
+            guessed_scanner_ptr->get_name().c_str());
+    if (!originating_system_was_recognised)
+      guessed_scanner_ptr.reset(new Scanner(Scanner::Unknown_scanner));
+  }
+}
 
-    if (num_rings < 1)
-      warning("Interfile warning: 'number of rings' invalid.\n");
-    if (num_detectors_per_ring < 1)
-      warning("Interfile warning: 'num_detectors_per_ring' invalid.\n");
+if (guessed_scanner_ptr->get_type() == Scanner::Unknown_scanner ||
+    guessed_scanner_ptr->get_type() == Scanner::User_defined_scanner) {
+  // warn if the Interfile header does not provide enough info
+
+  if (num_rings < 1)
+    warning("Interfile warning: 'number of rings' invalid.\n");
+  if (num_detectors_per_ring < 1)
+    warning("Interfile warning: 'num_detectors_per_ring' invalid.\n");
 #if 0
     if (transaxial_FOV_diameter_in_cm < 0)
       warning("Interfile warning: 'transaxial FOV diameter (cm)' invalid.\n");
 #endif
-    if (inner_ring_diameter_in_cm <= 0)
-      warning("Interfile warning: 'inner ring diameter (cm)' invalid. This might disastrous\n");
-    if (average_depth_of_interaction_in_cm <= 0)
-      warning("Interfile warning: 'average depth of interaction (cm)' invalid. This might be disastrous.\n");
-    if (distance_between_rings_in_cm <= 0)
-      warning("Interfile warning: 'distance between rings (cm)' invalid.\n");
-    if (default_bin_size_in_cm <= 0)
-      warning("Interfile warning: 'default_bin size (cm)' invalid.\n");
-    if (num_axial_crystals_per_singles_unit <= 0)
-      warning("Interfile warning: 'axial crystals per singles unit' invalid.\n");
-    if (num_transaxial_crystals_per_singles_unit <= 0)
-      warning("Interfile warning: 'transaxial crystals per singles unit' invalid.\n");
+  if (inner_ring_diameter_in_cm <= 0)
+    warning("Interfile warning: 'inner ring diameter (cm)' invalid. This might disastrous\n");
+  if (average_depth_of_interaction_in_cm <= 0)
+    warning("Interfile warning: 'average depth of interaction (cm)' invalid. This might be disastrous.\n");
+  if (distance_between_rings_in_cm <= 0)
+    warning("Interfile warning: 'distance between rings (cm)' invalid.\n");
+  if (default_bin_size_in_cm <= 0)
+    warning("Interfile warning: 'default_bin size (cm)' invalid.\n");
+  if (num_axial_crystals_per_singles_unit <= 0)
+    warning("Interfile warning: 'axial crystals per singles unit' invalid.\n");
+  if (num_transaxial_crystals_per_singles_unit <= 0)
+    warning("Interfile warning: 'transaxial crystals per singles unit' invalid.\n");
+}
+
+// finally, we construct a new scanner object with
+// data from the Interfile header (or the guessed scanner).
+shared_ptr<Scanner> scanner_ptr_from_file(new Scanner(
+    guessed_scanner_ptr->get_type(), get_exam_info().originating_system, num_detectors_per_ring, num_rings,
+    max_num_non_arccorrected_bins, default_num_arccorrected_bins, static_cast<float>(inner_ring_diameter_in_cm * 10. / 2),
+    static_cast<float>(average_depth_of_interaction_in_cm * 10), static_cast<float>(distance_between_rings_in_cm * 10.),
+    static_cast<float>(default_bin_size_in_cm * 10), static_cast<float>(view_offset_in_degrees* _PI / 180),
+    num_axial_blocks_per_bucket, num_transaxial_blocks_per_bucket, num_axial_crystals_per_block,
+    num_transaxial_crystals_per_block, num_axial_crystals_per_singles_unit, num_transaxial_crystals_per_singles_unit,
+    num_detector_layers, energy_resolution, reference_energy));
+
+bool is_consistent = scanner_ptr_from_file->check_consistency() == Succeeded::yes;
+if (scanner_ptr_from_file->get_type() == Scanner::Unknown_scanner ||
+    scanner_ptr_from_file->get_type() == Scanner::User_defined_scanner || mismatch_between_header_and_guess || !is_consistent) {
+  warning("Interfile parsing ended up with the following scanner:\n%s\n", scanner_ptr_from_file->parameter_info().c_str());
+}
+
+// float azimuthal_angle_sampling =_PI/num_views;
+
+if (is_arccorrected) {
+  if (effective_central_bin_size_in_cm <= 0)
+    effective_central_bin_size_in_cm = scanner_ptr_from_file->get_default_bin_size() / 10;
+  else if (fabs(effective_central_bin_size_in_cm - scanner_ptr_from_file->get_default_bin_size() / 10) > .001)
+    warning("Interfile warning: unexpected effective_central_bin_size_in_cm\n"
+            "Value in header is %g while the default for the scanner is %g\n"
+            "Using value from header.",
+            effective_central_bin_size_in_cm, scanner_ptr_from_file->get_default_bin_size() / 10);
+
+  data_info_sptr.reset(new ProjDataInfoCylindricalArcCorr(scanner_ptr_from_file, float(effective_central_bin_size_in_cm * 10.),
+                                                          sorted_num_rings_per_segment, sorted_min_ring_diff,
+                                                          sorted_max_ring_diff, num_views, num_bins));
+} else {
+  data_info_sptr.reset(new ProjDataInfoCylindricalNoArcCorr(scanner_ptr_from_file, sorted_num_rings_per_segment,
+                                                            sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins));
+  if (effective_central_bin_size_in_cm > 0 &&
+      fabs(effective_central_bin_size_in_cm - data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.) > .01) {
+    warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
+            "Value in header is %g while I expect %g from the inner ring radius etc\n"
+            "Ignoring value in header",
+            effective_central_bin_size_in_cm, data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.);
   }
+}
+// cerr << data_info_ptr->parameter_info() << endl;
 
-  // finally, we construct a new scanner object with
-  // data from the Interfile header (or the guessed scanner).
+// Set the bed position
+data_info_sptr->set_bed_position_horizontal(bed_position_horizontal);
+data_info_sptr->set_bed_position_vertical(bed_position_vertical);
 
-  shared_ptr<Scanner> scanner_sptr_from_file;
-
-  scanner_sptr_from_file.reset(new Scanner(
-      guessed_scanner_ptr->get_type(), get_exam_info_sptr()->originating_system, num_detectors_per_ring, num_rings,
-      max_num_non_arccorrected_bins, default_num_arccorrected_bins, static_cast<float>(inner_ring_diameter_in_cm * 10. / 2),
-      static_cast<float>(average_depth_of_interaction_in_cm * 10), static_cast<float>(distance_between_rings_in_cm * 10.),
-      static_cast<float>(default_bin_size_in_cm * 10), static_cast<float>(view_offset_in_degrees * _PI / 180),
-      num_axial_blocks_per_bucket, num_transaxial_blocks_per_bucket, num_axial_crystals_per_block,
-      num_transaxial_crystals_per_block, num_axial_crystals_per_singles_unit, num_transaxial_crystals_per_singles_unit,
-      num_detector_layers, energy_resolution, reference_energy, max_num_timing_poss, size_of_timing_pos, timing_resolution));
-
-  bool is_consistent = scanner_sptr_from_file->check_consistency() == Succeeded::yes;
-  if (scanner_sptr_from_file->get_type() == Scanner::Unknown_scanner ||
-      scanner_sptr_from_file->get_type() == Scanner::User_defined_scanner || mismatch_between_header_and_guess ||
-      !is_consistent) {
-    warning("Interfile parsing ended up with the following scanner:\n%s\n", scanner_sptr_from_file->parameter_info().c_str());
-  }
-
-  // float azimuthal_angle_sampling =_PI/num_views;
-
-  if (is_arccorrected) {
-    if (effective_central_bin_size_in_cm <= 0)
-      effective_central_bin_size_in_cm = scanner_sptr_from_file->get_default_bin_size() / 10;
-    else if (fabs(effective_central_bin_size_in_cm - scanner_sptr_from_file->get_default_bin_size() / 10) > .001)
-      warning("Interfile warning: unexpected effective_central_bin_size_in_cm\n"
-              "Value in header is %g while the default for the scanner is %g\n"
-              "Using value from header.",
-              effective_central_bin_size_in_cm, scanner_sptr_from_file->get_default_bin_size() / 10);
-
-    data_info_sptr.reset(new ProjDataInfoCylindricalArcCorr(scanner_sptr_from_file, float(effective_central_bin_size_in_cm * 10.),
-                                                            sorted_num_rings_per_segment, sorted_min_ring_diff,
-                                                            sorted_max_ring_diff, num_views, num_bins, tof_mash_factor));
-  } else {
-    data_info_sptr.reset(new ProjDataInfoCylindricalNoArcCorr(scanner_sptr_from_file, sorted_num_rings_per_segment,
-                                                              sorted_min_ring_diff, sorted_max_ring_diff, num_views, num_bins,
-                                                              tof_mash_factor));
-    if (effective_central_bin_size_in_cm > 0 &&
-        fabs(effective_central_bin_size_in_cm - data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.) > .01) {
-      warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
-              "Value in header is %g while I expect %g from the inner ring radius etc\n"
-              "Ignoring value in header",
-              effective_central_bin_size_in_cm, data_info_sptr->get_sampling_in_s(Bin(0, 0, 0, 0)) / 10.);
-    }
-  }
-  // cerr << data_info_ptr->parameter_info() << endl;
-
-  // Set the bed position
-  data_info_sptr->set_bed_position_horizontal(bed_position_horizontal);
-  data_info_sptr->set_bed_position_vertical(bed_position_vertical);
-
-  return false;
+return false;
 }
 
 END_NAMESPACE_STIR

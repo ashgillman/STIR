@@ -6,15 +6,7 @@
     Copyright (C) 2016, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -93,8 +85,12 @@ Scanner::get_default_bin_size() const {
 }
 
 float
-Scanner::get_default_intrinsic_tilt() const {
+Scanner::get_intrinsic_azimuthal_tilt() const {
+#ifdef STIR_LEGACY_IGNORE_VIEW_OFFSET
+  return 0.F;
+#else
   return intrinsic_tilt;
+#endif
 }
 
 int
@@ -198,26 +194,6 @@ Scanner::get_reference_energy() const {
   return reference_energy;
 }
 
-int
-Scanner::get_max_num_timing_poss() const {
-  return max_num_of_timing_poss;
-}
-
-float
-Scanner::get_size_of_timing_pos() const {
-  return size_timing_pos;
-}
-
-float
-Scanner::get_timing_resolution() const {
-  return timing_resolution;
-}
-
-bool
-Scanner::is_tof_ready() const {
-  return (max_num_of_timing_poss > 0 && size_timing_pos > 0.0f && timing_resolution > 0.0f);
-}
-
 //************************ set ******************************8
 
 void
@@ -271,7 +247,7 @@ Scanner::set_default_bin_size(const float& new_size) {
 }
 
 void
-Scanner::set_default_intrinsic_tilt(const float& new_tilt) {
+Scanner::set_intrinsic_azimuthal_tilt(const float new_tilt) {
   intrinsic_tilt = new_tilt;
 }
 
@@ -324,18 +300,6 @@ void
 Scanner::set_num_max_of_timing_poss(const int new_num) {
   max_num_of_timing_poss = new_num;
 }
-
-void
-Scanner::set_size_of_timing_poss(const float new_num) {
-  size_timing_pos = new_num;
-}
-
-void
-Scanner::set_timing_resolution(const float new_num_in_ps) {
-  timing_resolution = new_num_in_ps;
-}
-
-/********    Calculate singles bin index from detection position    *********/
 
 int
 Scanner::get_singles_bin_index(int axial_index, int transaxial_index) const {

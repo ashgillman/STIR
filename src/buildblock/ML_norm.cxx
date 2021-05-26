@@ -4,15 +4,7 @@
     Copyright (C) 2016-2017, PETsys Electronics
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -855,7 +847,6 @@ make_fan_data(FanProjData& fan_data, const ProjData& proj_data) {
     error("make_fan_data: Incompatible with TOF data. Abort.");
 
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-
       get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
 
   const int half_fan_size = fan_size / 2;
@@ -866,25 +857,20 @@ make_fan_data(FanProjData& fan_data, const ProjData& proj_data) {
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();
        ++bin.segment_num()) {
-    //	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++
-    // bin.timing_pos_num())
-    {
-      segment_ptr.reset(
-          new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num() /*,bin.timing_pos_num()*/)));
+    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
 
-      for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-           bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
-        for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
-          for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num()) {
-            int ra = 0, a = 0;
-            int rb = 0, b = 0;
+    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+         bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
+      for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
+        for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num()) {
+          int ra = 0, a = 0;
+          int rb = 0, b = 0;
 
-            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+          proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
 
-            fan_data(ra, a, rb, b) = fan_data(rb, b, ra, a) =
-                (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-          }
-    }
+          fan_data(ra, a, rb, b) = fan_data(rb, b, ra, a) =
+              (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+        }
   }
 }
 
@@ -961,7 +947,6 @@ set_fan_data(ProjData& proj_data, const FanProjData& fan_data) {
     error("make_fan_data: Incompatible with TOF data. Abort.");
 
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-
       get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
 
   const int half_fan_size = fan_size / 2;
@@ -973,25 +958,20 @@ set_fan_data(ProjData& proj_data, const FanProjData& fan_data) {
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();
        ++bin.segment_num()) {
-    //	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++
-    // bin.timing_pos_num())
-    {
-      segment_ptr.reset(
-          new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num() /*,bin.timing_pos_num()*/)));
+    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num())));
 
-      for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-           bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
-        for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
-          for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num()) {
-            int ra = 0, a = 0;
-            int rb = 0, b = 0;
+    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+         bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
+      for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
+        for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num()) {
+          int ra = 0, a = 0;
+          int rb = 0, b = 0;
 
-            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+          proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
 
-            (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = fan_data(ra, a, rb, b);
-          }
-      proj_data.set_segment(*segment_ptr);
-    }
+          (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] = fan_data(ra, a, rb, b);
+        }
+    proj_data.set_segment(*segment_ptr);
   }
 }
 
@@ -1227,7 +1207,6 @@ make_fan_sum_data(Array<2, float>& data_fan_sums, const ProjData& proj_data) {
     error("make_fan_data: Incompatible with TOF data. Abort.");
 
   shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-
       get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, *proj_data.get_proj_data_info_sptr());
   const int half_fan_size = fan_size / 2;
   data_fan_sums.fill(0);
@@ -1237,26 +1216,21 @@ make_fan_sum_data(Array<2, float>& data_fan_sums, const ProjData& proj_data) {
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();
        ++bin.segment_num()) {
-    //	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++
-    // bin.timing_pos_num())
-    {
-      segment_ptr.reset(
-          new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num() /*,bin.timing_pos_num()*/)));
+    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
 
-      for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
-           bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
-        for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
-          for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num()) {
-            int ra = 0, a = 0;
-            int rb = 0, b = 0;
+    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+         bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
+      for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring / 2; bin.view_num()++)
+        for (bin.tangential_pos_num() = -half_fan_size; bin.tangential_pos_num() <= half_fan_size; ++bin.tangential_pos_num()) {
+          int ra = 0, a = 0;
+          int rb = 0, b = 0;
 
-            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+          proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
 
-            const float value = (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-            data_fan_sums[ra][a] += value;
-            data_fan_sums[rb][b] += value;
-          }
-    }
+          const float value = (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+          data_fan_sums[ra][a] += value;
+          data_fan_sums[rb][b] += value;
+        }
   }
 }
 

@@ -14,15 +14,7 @@
     Copyright (C) 2019, 2020, UCL
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -149,9 +141,12 @@ ProjDataInMemory::get_size_of_buffer_in_bytes() const {
 
 float
 ProjDataInMemory::get_bin_value(Bin& bin) {
-  //   Viewgram<float> viewgram = get_viewgram(bin.view_num(),bin.segment_num());
-  //   return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()];
-  return ProjDataFromStream::get_bin_value(bin);
+  // first find offset in the stream
+  std::vector<std::streamoff> offsets = get_offsets_bin(bin);
+  const std::streamoff total_offset = offsets[0];
+  // now convert to index in the buffer
+  const int index = static_cast<int>(total_offset / sizeof(float));
+  return buffer[index];
 }
 
 void

@@ -4,15 +4,7 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -30,7 +22,7 @@
   \author PARAPET project
   \author Tobias Beisel
 */
-/* Modification history:
+/* Modification history:d
    KT 30/05/2002
    get rid of dependence on specific symmetries (i.e. views up to 45 degrees)
 
@@ -82,38 +74,35 @@ get_viewgrams(shared_ptr<RelatedViewgrams<float>>& y, shared_ptr<RelatedViewgram
               const bool read_from_proj_dat, const bool zero_seg0_end_planes, const shared_ptr<ProjData>& binwise_correction,
               const shared_ptr<BinNormalisation>& normalisation_sptr, const double start_time_of_frame,
               const double end_time_of_frame, const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
-              const ViewSegmentNumbers& view_segment_num, const int timing_pos_num) {
+              const ViewSegmentNumbers& view_segment_num) {
   if (!is_null_ptr(binwise_correction)) {
 #if !defined(_MSC_VER) || _MSC_VER > 1300
-    additive_binwise_correction_viewgrams.reset(new RelatedViewgrams<float>(
-        binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num)));
+    additive_binwise_correction_viewgrams.reset(
+        new RelatedViewgrams<float>(binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr)));
 #else
-    RelatedViewgrams<float> tmp(
-        binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num));
+    RelatedViewgrams<float> tmp(binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr));
     additive_binwise_correction_viewgrams = new RelatedViewgrams<float>(tmp);
 #endif
   }
 
   if (read_from_proj_dat) {
 #if !defined(_MSC_VER) || _MSC_VER > 1300
-    y.reset(new RelatedViewgrams<float>(
-        proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num)));
+    y.reset(new RelatedViewgrams<float>(proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr)));
 #else
     // workaround VC++ 6.0 bug
-    RelatedViewgrams<float> tmp(proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num));
+    RelatedViewgrams<float> tmp(proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr));
     y = new RelatedViewgrams<float>(tmp);
 #endif
   } else {
-    y.reset(new RelatedViewgrams<float>(
-        proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num)));
+    y.reset(new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
   }
 
   // multiplicative correction
   if (!is_null_ptr(normalisation_sptr) && !normalisation_sptr->is_trivial()) {
-    mult_viewgrams_sptr.reset(new RelatedViewgrams<float>(
-        proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr, false, timing_pos_num)));
+    mult_viewgrams_sptr.reset(
+        new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
     mult_viewgrams_sptr->fill(1.F);
-    normalisation_sptr->undo(*mult_viewgrams_sptr, start_time_of_frame, end_time_of_frame);
+    normalisation_sptr->undo(*mult_viewgrams_sptr);
   }
 
   if (view_segment_num.segment_num() == 0 && zero_seg0_end_planes) {
@@ -128,7 +117,6 @@ send_viewgrams(const shared_ptr<RelatedViewgrams<float>>& y,
                const shared_ptr<RelatedViewgrams<float>>& additive_binwise_correction_viewgrams,
                const shared_ptr<RelatedViewgrams<float>>& mult_viewgrams_sptr, const int next_receiver) {
   distributed::send_view_segment_numbers(y->get_basic_view_segment_num(), NEW_VIEWGRAM_TAG, next_receiver);
-  distributed::send_int_value(y->get_basic_timing_pos_num(), next_receiver);
 
 #ifndef NDEBUG
   // test sending related viewgrams
@@ -167,8 +155,7 @@ distributable_computation_cache_enabled(
     int subset_num, int num_subsets, int min_segment_num, int max_segment_num, bool zero_seg0_end_planes,
     double* log_likelihood_ptr, const shared_ptr<ProjData>& binwise_correction, const shared_ptr<BinNormalisation> normalise_sptr,
     const double start_time_of_frame, const double end_time_of_frame,
-    RPC_process_related_viewgrams_type* RPC_process_related_viewgrams, DistributedCachingInformation* caching_info_ptr,
-    int min_timing_pos_num, int max_timing_pos_num) {
+    RPC_process_related_viewgrams_type* RPC_process_related_viewgrams, DistributedCachingInformation* caching_info_ptr) {
   // test distributed functions (see DistributedTestFunctions.h for details)
 #ifndef NDEBUG
   if (distributed::test && distributed::first_iteration) {
@@ -195,7 +182,6 @@ distributable_computation_cache_enabled(
   distributed::send_bool_value(!is_null_ptr(output_image_ptr), USE_OUTPUT_IMAGE_ARG_TAG, -1);
 
   assert(min_segment_num <= max_segment_num);
-  assert(min_timing_pos_num <= max_timing_pos_num);
   assert(subset_num >= 0);
   assert(subset_num < num_subsets);
 
@@ -234,46 +220,43 @@ distributable_computation_cache_enabled(
     const bool new_viewgrams = caching_info_ptr->get_unprocessed_vs_num(view_segment_num, next_receiver);
     // view_segment_num = vs_nums_to_process[processed_count-1];
 
-    for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num) {
+    // the slave has not yet processed this vs_num, so the viewgrams have to be sent
+    if (new_viewgrams == true) {
+      info(boost::format("Sending segment %1%, view %2% to slave %3%\n") % view_segment_num.segment_num() %
+           view_segment_num.view_num() % next_receiver);
 
-      // the slave has not yet processed this vs_num, so the viewgrams have to be sent
-      if (new_viewgrams == true) {
-        info(boost::format("Sending segment %1%, view %2%, TOF bin %3% to slave %4%\n") % view_segment_num.segment_num() %
-             view_segment_num.view_num() % timing_pos_num % next_receiver);
+      shared_ptr<RelatedViewgrams<float>> y;
+      shared_ptr<RelatedViewgrams<float>> additive_binwise_correction_viewgrams;
+      shared_ptr<RelatedViewgrams<float>> mult_viewgrams_sptr;
 
-        shared_ptr<RelatedViewgrams<float>> y;
-        shared_ptr<RelatedViewgrams<float>> additive_binwise_correction_viewgrams;
-        shared_ptr<RelatedViewgrams<float>> mult_viewgrams_sptr;
+      get_viewgrams(y, additive_binwise_correction_viewgrams, mult_viewgrams_sptr, proj_dat_ptr, read_from_proj_dat,
+                    zero_seg0_end_planes, binwise_correction, normalise_sptr, start_time_of_frame, end_time_of_frame,
+                    symmetries_ptr, view_segment_num);
 
-        get_viewgrams(y, additive_binwise_correction_viewgrams, mult_viewgrams_sptr, proj_dat_ptr, read_from_proj_dat,
-                      zero_seg0_end_planes, binwise_correction, normalise_sptr, start_time_of_frame, end_time_of_frame,
-                      symmetries_ptr, view_segment_num, timing_pos_num);
+      // send viewgrams, the slave will immediatelly start calculation
+      send_viewgrams(y, additive_binwise_correction_viewgrams, mult_viewgrams_sptr, next_receiver);
+    } // if(new_viewgram)
+    else {
+      info(boost::format("Re-using  segment %1%, view %2% to slave %3%\n") % view_segment_num.segment_num() %
+           view_segment_num.view_num() % next_receiver);
+      // send vs_num with reuse-tag, the slave will immediatelly start calculation
+      distributed::send_view_segment_numbers(view_segment_num, REUSE_VIEWGRAM_TAG, next_receiver);
+    }
 
-        // send viewgrams, the slave will immediatelly start calculation
-        send_viewgrams(y, additive_binwise_correction_viewgrams, mult_viewgrams_sptr, next_receiver);
-      } // if(new_viewgram)
-      else {
-        info(boost::format("Re-using  segment %1%, view %2%, TOF bin %3% to slave %4%\n") % view_segment_num.segment_num() %
-             view_segment_num.view_num() % timing_pos_num % next_receiver);
-        // send vs_num with reuse-tag, the slave will immediatelly start calculation
-        distributed::send_view_segment_numbers(view_segment_num, REUSE_VIEWGRAM_TAG, next_receiver);
-      }
+    working_slaves_count++;
 
-      working_slaves_count++;
+    if (int(processed_count) < distributed::num_processors - 1) // note: -1 as master doesn't get any viewgrams
+    {
+      // give every slave some work before waiting for requests
+      next_receiver++;
+    } else {
+      const MPI_Status status = distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
+      next_receiver = status.MPI_SOURCE;
+      working_slaves_count--;
 
-      if (int(processed_count) < distributed::num_processors - 1) // note: -1 as master doesn't get any viewgrams
-      {
-        // give every slave some work before waiting for requests
-        next_receiver++;
-      } else {
-        const MPI_Status status = distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
-        next_receiver = status.MPI_SOURCE;
-        working_slaves_count--;
-
-        // reduce count values
-        count += int_values[0];
-        count2 += int_values[1];
-      }
+      // reduce count values
+      count += int_values[0];
+      count2 += int_values[1];
     }
   } // end loop over vs_nums
 

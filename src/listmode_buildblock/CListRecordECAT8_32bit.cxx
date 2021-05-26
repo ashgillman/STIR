@@ -2,15 +2,7 @@
     Copyright (C) 2013 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -35,7 +27,8 @@ START_NAMESPACE_STIR
 namespace ecat {
 
 CListEventECAT8_32bit::CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
-    : CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr) {
+    : CListEventCylindricalScannerWithDiscreteDetectors(
+          shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))) {
   const ProjDataInfoCylindricalNoArcCorr* const proj_data_info_ptr =
       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(proj_data_info_sptr.get());
   if (proj_data_info_ptr == 0)
@@ -52,8 +45,8 @@ CListEventECAT8_32bit::CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo
 void
 CListEventECAT8_32bit::get_detection_position(DetectionPositionPair<>& det_pos) const {
   /* data is organised by segment, axial coordinate, view, tangential */
-  const int num_tangential_poss = this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_default_num_arccorrected_bins();
-  const int num_views = this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring() / 2;
+  const int num_tangential_poss = this->scanner_sptr->get_default_num_arccorrected_bins();
+  const int num_views = this->scanner_sptr->get_num_detectors_per_ring() / 2;
 
   const int tang_pos_num = this->data.offset % num_tangential_poss; //(this->num_sinograms * this-> num_views);
   const int rest = this->data.offset / num_tangential_poss;

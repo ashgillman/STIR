@@ -6,15 +6,7 @@
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -39,8 +31,8 @@ START_NAMESPACE_STIR
 
 template <typename elemT>
 SegmentBySinogram<elemT>::SegmentBySinogram(const Array<3, elemT>& v, const shared_ptr<const ProjDataInfo>& pdi_ptr,
-                                            const int segment_num, const int timing_pos_num)
-    : Segment<elemT>(pdi_ptr, segment_num, timing_pos_num), Array<3, elemT>(v) {
+                                            const int segment_num)
+    : Segment<elemT>(pdi_ptr, segment_num), Array<3, elemT>(v) {
   assert(get_min_view_num() == pdi_ptr->get_min_view_num());
   assert(get_max_view_num() == pdi_ptr->get_max_view_num());
   assert(get_min_axial_pos_num() == pdi_ptr->get_min_axial_pos_num(segment_num));
@@ -50,17 +42,16 @@ SegmentBySinogram<elemT>::SegmentBySinogram(const Array<3, elemT>& v, const shar
 }
 
 template <typename elemT>
-SegmentBySinogram<elemT>::SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr, const int segment_num,
-                                            const int timing_pos_num)
-    : Segment<elemT>(pdi_ptr, segment_num, timing_pos_num),
-      Array<3, elemT>(IndexRange3D(pdi_ptr->get_min_axial_pos_num(segment_num), pdi_ptr->get_max_axial_pos_num(segment_num),
-                                   pdi_ptr->get_min_view_num(), pdi_ptr->get_max_view_num(),
-                                   pdi_ptr->get_min_tangential_pos_num(), pdi_ptr->get_max_tangential_pos_num())) {}
+SegmentBySinogram<elemT>::SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr, const int segment_num)
+    : Segment<elemT>(pdi_ptr, segment_num), Array<3, elemT>(IndexRange3D(pdi_ptr->get_min_axial_pos_num(segment_num),
+                                                                         pdi_ptr->get_max_axial_pos_num(segment_num),
+                                                                         pdi_ptr->get_min_view_num(), pdi_ptr->get_max_view_num(),
+                                                                         pdi_ptr->get_min_tangential_pos_num(),
+                                                                         pdi_ptr->get_max_tangential_pos_num())) {}
 
 template <typename elemT>
 SegmentBySinogram<elemT>::SegmentBySinogram(const SegmentByView<elemT>& s_v)
-
-    : Segment<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(), s_v.get_segment_num(), s_v.get_timing_pos_num()),
+    : Segment<elemT>(s_v.get_proj_data_info_sptr()->create_shared_clone(), s_v.get_segment_num()),
       Array<3, elemT>(IndexRange3D(s_v.get_min_axial_pos_num(), s_v.get_max_axial_pos_num(), s_v.get_min_view_num(),
                                    s_v.get_max_view_num(), s_v.get_min_tangential_pos_num(), s_v.get_max_tangential_pos_num())) {
 
@@ -84,8 +75,7 @@ SegmentBySinogram<elemT>::get_viewgram(int view_num) const {
     pre_view[r] = Array<3, elemT>::operator[](r)[view_num];
   // KT 9/12 constructed a PETSinogram before...
   // CL&KT 15/12 added ring_difference stuff
-  return Viewgram<elemT>(pre_view, this->proj_data_info_sptr->create_shared_clone(), view_num, this->get_segment_num(),
-                         this->get_timing_pos_num());
+  return Viewgram<elemT>(pre_view, this->proj_data_info_sptr->create_shared_clone(), view_num, this->get_segment_num());
 }
 
 template <typename elemT>

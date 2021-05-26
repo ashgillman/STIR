@@ -5,15 +5,7 @@
     Copyright (C) 2014, 2018 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -82,36 +74,33 @@ BinNormalisation::check(const ExamInfo& exam_info) const {
 // TODO remove duplication between apply and undo by just having 1 functino that does the loops
 
 void
-BinNormalisation::apply(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const {
+BinNormalisation::apply(RelatedViewgrams<float>& viewgrams) const {
   this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter) {
-    Bin bin(iter->get_segment_num(), iter->get_view_num(), 0, 0, iter->get_timing_pos_num());
+    Bin bin(iter->get_segment_num(), iter->get_view_num(), 0, 0);
     for (bin.axial_pos_num() = iter->get_min_axial_pos_num(); bin.axial_pos_num() <= iter->get_max_axial_pos_num();
          ++bin.axial_pos_num())
       for (bin.tangential_pos_num() = iter->get_min_tangential_pos_num();
            bin.tangential_pos_num() <= iter->get_max_tangential_pos_num(); ++bin.tangential_pos_num())
-        (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /=
-            std::max(1.E-20F, get_bin_efficiency(bin, start_time, end_time));
+        (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /= std::max(1.E-20F, get_bin_efficiency(bin));
   }
 }
 
 void
-BinNormalisation::undo(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const {
+BinNormalisation::undo(RelatedViewgrams<float>& viewgrams) const {
   this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter) {
-    Bin bin(iter->get_segment_num(), iter->get_view_num(), 0, 0, iter->get_timing_pos_num());
+    Bin bin(iter->get_segment_num(), iter->get_view_num(), 0, 0);
     for (bin.axial_pos_num() = iter->get_min_axial_pos_num(); bin.axial_pos_num() <= iter->get_max_axial_pos_num();
          ++bin.axial_pos_num())
       for (bin.tangential_pos_num() = iter->get_min_tangential_pos_num();
            bin.tangential_pos_num() <= iter->get_max_tangential_pos_num(); ++bin.tangential_pos_num())
-        (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] *= this->get_bin_efficiency(bin, start_time, end_time);
+        (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] *= this->get_bin_efficiency(bin);
   }
 }
 
 void
 BinNormalisation::apply(ProjData& proj_data, shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const {
-  const float start_time = exam_info_sptr->get_time_frame_definitions().get_start_time();
-  const float end_time = exam_info_sptr->get_time_frame_definitions().get_end_time();
   this->check(*proj_data.get_proj_data_info_sptr());
   this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))
@@ -128,33 +117,29 @@ BinNormalisation::apply(ProjData& proj_data, shared_ptr<DataSymmetriesForViewSeg
   for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i) {
     const ViewSegmentNumbers vs = vs_nums_to_process[i];
 
-    for (int k = proj_data.get_proj_data_info_sptr()->get_min_tof_pos_num();
-         k <= proj_data.get_proj_data_info_sptr()->get_max_tof_pos_num(); ++k) {
-
-      RelatedViewgrams<float> viewgrams;
+    RelatedViewgrams<float> viewgrams;
 #ifdef STIR_OPENMP
-      // reading/writing to streams is not safe in multi-threaded code
-      // so protect with a critical section
-      // note that the name of the section has to be same for the get/set
-      // function as they're reading from/writing to the same stream
+    // reading/writing to streams is not safe in multi-threaded code
+    // so protect with a critical section
+    // note that the name of the section has to be same for the get/set
+    // function as they're reading from/writing to the same stream
 #  pragma omp critical(BINNORMALISATION_APPLY__VIEWGRAMS)
 #endif
-      { viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k); }
+    { viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr); }
 
-      this->apply(viewgrams, start_time, end_time);
+    this->apply(viewgrams);
 
 #ifdef STIR_OPENMP
 #  pragma omp critical(BINNORMALISATION_APPLY__VIEWGRAMS)
 #endif
-      { proj_data.set_related_viewgrams(viewgrams); }
-    }
+    { proj_data.set_related_viewgrams(viewgrams); }
   }
 }
 
 void
-BinNormalisation::undo(ProjData& proj_data, const double start_time, const double end_time,
-                       shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const {
+BinNormalisation::undo(ProjData& proj_data, shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const {
   this->check(*proj_data.get_proj_data_info_sptr());
+  this->check(proj_data.get_exam_info());
   if (is_null_ptr(symmetries_sptr))
     symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_sptr()->create_shared_clone()));
 
@@ -169,21 +154,18 @@ BinNormalisation::undo(ProjData& proj_data, const double start_time, const doubl
   for (int i = 0; i < static_cast<int>(vs_nums_to_process.size()); ++i) {
     const ViewSegmentNumbers vs = vs_nums_to_process[i];
 
-    for (int k = proj_data.get_proj_data_info_sptr()->get_min_tof_pos_num();
-         k <= proj_data.get_proj_data_info_sptr()->get_max_tof_pos_num(); ++k) {
-      RelatedViewgrams<float> viewgrams;
+    RelatedViewgrams<float> viewgrams;
 #ifdef STIR_OPENMP
 #  pragma omp critical(BINNORMALISATION_UNDO__VIEWGRAMS)
 #endif
-      { viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k); }
+    { viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr); }
 
-      this->undo(viewgrams, start_time, end_time);
+    this->undo(viewgrams);
 
 #ifdef STIR_OPENMP
 #  pragma omp critical(BINNORMALISATION_UNDO__VIEWGRAMS)
 #endif
-      { proj_data.set_related_viewgrams(viewgrams); }
-    }
+    { proj_data.set_related_viewgrams(viewgrams); }
   }
 }
 

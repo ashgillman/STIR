@@ -5,15 +5,7 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -108,9 +100,9 @@ ProjMatrixElemsForOneBin::check_state() const {
 
   for (ProjMatrixElemsForOneBin::const_iterator lor_iter = lor.begin(); lor_iter != lor.end() - 1; ++lor_iter) {
     if (value_type::coordinates_equal(*lor_iter, *(lor_iter + 1))) {
-      warning("ProjMatrixElemsForOneBin: coordinates occur more than once %d,%d,%d for bin s=%d, tofbin=%d, v=%d, a=%d, t=%d\n",
-              lor_iter->coord1(), lor_iter->coord2(), lor_iter->coord3(), bin.segment_num(), bin.timing_pos_num(), bin.view_num(),
-              bin.axial_pos_num(), bin.tangential_pos_num());
+      warning("ProjMatrixElemsForOneBin: coordinates occur more than once %d,%d,%d for bin s=%d, v=%d, a=%d, t=%d\n",
+              lor_iter->coord1(), lor_iter->coord2(), lor_iter->coord3(), bin.segment_num(), bin.view_num(), bin.axial_pos_num(),
+              bin.tangential_pos_num());
 #if 0
       const_iterator iter = begin();
       while (iter!= end())

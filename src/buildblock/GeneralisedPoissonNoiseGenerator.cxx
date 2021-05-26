@@ -3,15 +3,7 @@
     Copyright (C) 2017, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -108,14 +100,11 @@ GeneralisedPoissonNoiseGenerator::generate_random(const float mu) {
 void
 GeneralisedPoissonNoiseGenerator::generate_random(ProjData& output_projdata, const ProjData& input_projdata) {
   for (int seg = input_projdata.get_min_segment_num(); seg <= input_projdata.get_max_segment_num(); seg++) {
-    for (int timing_pos_num = input_projdata.get_min_tof_pos_num(); timing_pos_num <= input_projdata.get_max_tof_pos_num();
-         ++timing_pos_num) {
-      SegmentByView<float> seg_output = output_projdata.get_empty_segment_by_view(seg, false, timing_pos_num);
+    SegmentByView<float> seg_output = output_projdata.get_empty_segment_by_view(seg);
 
-      this->generate_random(seg_output, input_projdata.get_segment_by_view(seg, timing_pos_num));
-      if (output_projdata.set_segment(seg_output) == Succeeded::no)
-        error("Problem writing to projection data");
-    }
+    this->generate_random(seg_output, input_projdata.get_segment_by_view(seg));
+    if (output_projdata.set_segment(seg_output) == Succeeded::no)
+      error("Problem writing to projection data");
   }
 }
 

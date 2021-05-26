@@ -7,6 +7,7 @@
 
   \brief Declaration of class stir::Bin
 
+
   \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -20,15 +21,7 @@
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -42,14 +35,8 @@ START_NAMESPACE_STIR
  \brief
  A class for storing coordinates and value of a single projection bin.
 
- The timing position reflect the detection time difference between the two events.
- It is a multiple of the delta t of the least significant clock bit.
-
- \warning N.E: Constructors with default values were removed. I faced many problems with ambguity. I had to make
- changes to all the framework, when one set a float value, it has to be as 'x.f'
-
- \warning Temporarily the timing_pos_num is not taken into account when comparing two bins,
-    Until were are actually able to cache LORs based on timing location this could be let off.
+ The \c time_frame member defaults to 1 and needs to be set explicitly, e.g. when
+ handling list mode data.
 */
 
 class Bin {
@@ -58,13 +45,7 @@ public:
   inline Bin();
 
   //!  A constructor : constructs a bin with value (defaulting to 0)
-  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num, float bin_value);
-
-  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num);
-
-  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num, int timing_pos_num, float bin_value);
-
-  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num, int timing_pos_num);
+  inline Bin(int segment_num, int view_num, int axial_pos_num, int tangential_pos_num, float bin_value = 0);
 
   //! get axial position number
   inline int axial_pos_num() const;
@@ -74,14 +55,14 @@ public:
   inline int tangential_pos_num() const;
   //! get view number
   inline int view_num() const;
-  //! get timing position number
-  inline int timing_pos_num() const;
+  //! get time-frame number (1-based)
+  inline int time_frame_num() const;
 
   inline int& axial_pos_num();
   inline int& segment_num();
   inline int& tangential_pos_num();
   inline int& view_num();
-  inline int& timing_pos_num();
+  inline int& time_frame_num();
 
   //! get an empty copy
   inline Bin get_empty_copy() const;
@@ -111,8 +92,8 @@ private:
   int view;
   int axial_pos;
   int tangential_pos;
-  int timing_pos;
   float bin_value;
+  int time_frame;
 };
 
 END_NAMESPACE_STIR

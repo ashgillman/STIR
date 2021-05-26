@@ -13,15 +13,7 @@
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
 
     See STIR/LICENSE.txt for details
@@ -65,8 +57,6 @@ public:
 
   ~PresmoothingForwardProjectorByBin();
 
-  //  void update_filtered_density_image(const DiscretisedDensity<3,float>&);
-
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
    */
@@ -92,11 +82,6 @@ private:
 #endif
   void actual_forward_project(RelatedViewgrams<float>&, const int min_axial_pos_num, const int max_axial_pos_num,
                               const int min_tangential_pos_num, const int max_tangential_pos_num);
-
-#if 0 // disabled as currently not used. needs to be written in the new style anyway
-  void actual_forward_project(Bin&,
-                              const DiscretisedDensity<3,float>&);
-#endif
 
   virtual void set_defaults();
   virtual void initialise_keymap();

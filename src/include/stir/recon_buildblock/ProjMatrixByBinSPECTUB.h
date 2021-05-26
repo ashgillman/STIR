@@ -3,15 +3,7 @@
     Copyright (C) 2013, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -110,7 +102,7 @@ public:
   void set_keep_all_views_in_cache(bool value = true);
   std::string get_attenuation_type() const;
   //! Set type of attenuation modelling
-  /* Has to be "no", "simple" or "full"
+  /*! Has to be "no", "simple" or "full"
 
     You have to call set_up() after this (unless the value didn't change).
   */
@@ -143,10 +135,6 @@ public:
   */
 
   void set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D = true);
-
-  // Alex
-  // Fix to compile, missing function definition in header
-  ProjMatrixByBinSPECTUB* clone() const;
 
 private:
   // parameters that will be parsed

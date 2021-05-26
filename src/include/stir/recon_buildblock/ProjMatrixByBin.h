@@ -7,7 +7,6 @@
   \ingroup projection
   \brief declaration of stir::ProjMatrixByBin and its helpers classes
 
-  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -20,15 +19,7 @@
 
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -103,8 +94,6 @@ public:
                       const shared_ptr<const DiscretisedDensity<3, float>>& density_info_ptr // TODO should be Info only
                       ) = 0;
 
-  virtual ProjMatrixByBin* clone() const = 0;
-
   //! get a pointer to an object encoding all symmetries that are used by this ProjMatrixByBin
   inline const DataSymmetriesForBins* get_symmetries_ptr() const;
   //! get a shared_ptr to an object encoding all symmetries that are used by this ProjMatrixByBin
@@ -117,10 +106,7 @@ public:
 
   The implementation is inline as it just gets it in
   terms of the cached_proj_matrix_elems_for_one_bin or
-  calculate_proj_matrix_elems_for_one_bin.
-
-  N.E: Updated to accomondate TOF information.
-*/
+  calculate_proj_matrix_elems_for_one_bin.*/
   inline void get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&, const Bin&) STIR_MUTABLE_CONST;
 
 #if 0
@@ -198,13 +184,6 @@ protected:
   */
   Succeeded get_cached_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const;
 
-  //! We need a local copy of the discretised density in order to find the
-  //! cartesian coordinates of each voxel.
-  shared_ptr<const VoxelsOnCartesianGrid<float>> image_info_sptr;
-
-  //! We need a local copy of the proj_data_info to get the integration boundaries and RayTracing
-  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
-
   //! The method to store data in the cache.
   void cache_proj_matrix_elems_for_one_bin(const ProjMatrixElemsForOneBin&) STIR_MUTABLE_CONST;
 
@@ -233,27 +212,6 @@ private:
   //! create the key for caching
   // KT 15/05/2002 not static anymore as it uses cache_stores_only_basic_bins
   CacheKey cache_key(const Bin& bin) const;
-
-  //! Activates the application of the timing kernel to the LOR
-  //! and performs initial set_up().
-  //! \warning Must be called after set_up()
-  void enable_tof(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, const bool v = true);
-
-  //! A local copy of the scanner's time resolution in mm.
-  float gauss_sigma_in_mm;
-  //! 1/(2*sigma_in_mm)
-  float r_sqrt2_gauss_sigma;
-
-  Array<1, float> cache_erf;
-
-  //! The function which actually applies the TOF kernel on the LOR.
-  inline void apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneBin& probabilities,
-                                                       const CartesianCoordinate3D<float>& point1,
-                                                       const CartesianCoordinate3D<float>& point2,
-                                                       const unique_ptr<SymmetryOperation>& symm_ptr) STIR_MUTABLE_CONST;
-
-  //! Get the interal value erf(m - v_j) - erf(m -v_j)
-  inline void get_tof_value(const float d1, const float d2, float& val) const;
 };
 
 END_NAMESPACE_STIR

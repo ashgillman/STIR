@@ -4,15 +4,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2015, Univ. of Leeds
     Copyright (C) 2016, UCL
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -36,8 +28,6 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ExamInfo.h"
-
-START_NAMESPACE_STIR
 
 /*!
   \ingroup GeneralisedObjectiveFunction
@@ -67,7 +57,7 @@ private:
       base_type;
 
 public:
-  //! Name which will be 	d when parsing a GeneralisedObjectiveFunction object
+  //! Name which will be used when parsing a GeneralisedObjectiveFunction object
   static const char* const registered_name;
 
   PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>();
@@ -97,9 +87,6 @@ protected:
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
   int max_ring_difference_num_to_process;
-
-  //! Triggers calculation of sensitivity using time-of-flight
-  bool use_tofsens;
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;

@@ -18,15 +18,7 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -37,6 +29,7 @@
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include "stir/Array.h"
+#include "stir/deprecated.h"
 
 #include <iostream>
 #include <vector>
@@ -54,27 +47,23 @@ START_NAMESPACE_STIR
 
   No writing yet.
 
+ \deprecated
 */
-class ProjDataGEAdvance : public ProjData {
+class STIR_DEPRECATED ProjDataGEAdvance : public ProjData {
 public:
   static ProjDataGEAdvance* ask_parameters(const bool on_disk = true);
 
   ProjDataGEAdvance(std::iostream* s);
 
   //! Get & set viewgram
-  Viewgram<float> get_viewgram(const int view_num, const int segment_num, const bool make_num_tangential_poss_odd = false,
-                               const int timing_pos = 0) const;
+  Viewgram<float> get_viewgram(const int view_num, const int segment_num, const bool make_num_tangential_poss_odd = false) const;
   Succeeded set_viewgram(const Viewgram<float>& v);
 
   //! Get & set sinogram
-  Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num, const bool make_num_tangential_poss_odd = false,
-                               const int timing_pos = 0) const;
+  Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,
+                               const bool make_num_tangential_poss_odd = false) const;
   Succeeded set_sinogram(const Sinogram<float>& s);
 
-  //    float get_bin_value(const Bin& this_bin) const
-  //    {
-  //        // Do nothing
-  //    }
 private:
   // the file with the data
   // This has to be a reference (or pointer) to a stream,

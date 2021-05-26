@@ -53,7 +53,7 @@ CListModeDataGEHDF5::get_empty_record_sptr() const {
   if (is_null_ptr(this->get_proj_data_info_sptr()))
     error("listmode file needs to be opened before calling get_empty_record_sptr()");
 
-  shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr(), this->first_time_stamp));
+  shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr()->get_scanner_sptr(), this->first_time_stamp));
   return sptr;
 }
 
@@ -79,7 +79,6 @@ CListModeDataGEHDF5::open_lm_file() {
        2);
 
   //! \todo N.E: Remove hard-coded sizes; (they're stored in GEHDF5Wrapper)
-
   current_lm_data_ptr.reset(new InputStreamWithRecordsFromHDF5<CListRecordT>(listmode_filename, 6, 16));
 
   return Succeeded::yes;

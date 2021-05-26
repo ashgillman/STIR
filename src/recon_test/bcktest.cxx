@@ -3,15 +3,7 @@
     Copyright (C) 2000-2004, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2.0 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -83,75 +75,72 @@ using std::endl;
 START_NAMESPACE_STIR
 
 void
-do_segments(DiscretisedDensity<3, float>& image, ProjData& proj_data_org, const int start_timing_num, const int end_timing_num,
-            const int start_segment_num, const int end_segment_num, const int start_axial_pos_num, const int end_axial_pos_num,
-            const int start_tang_pos_num, const int end_tang_pos_num, const int start_view, const int end_view,
-            BackProjectorByBin* back_projector_ptr, bool fill_with_1) {
+do_segments(DiscretisedDensity<3, float>& image, ProjData& proj_data_org, const int start_segment_num, const int end_segment_num,
+            const int start_axial_pos_num, const int end_axial_pos_num, const int start_tang_pos_num, const int end_tang_pos_num,
+            const int start_view, const int end_view, BackProjectorByBin* back_projector_ptr, bool fill_with_1) {
 
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(back_projector_ptr->get_symmetries_used()->clone());
 
   list<ViewSegmentNumbers> already_processed;
+
   back_projector_ptr->start_accumulating_in_new_target();
-  for (int timing_num = start_timing_num; timing_num <= end_timing_num; ++timing_num) {
-    already_processed.clear();
-    for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
-      for (int view = start_view; view <= end_view; view++) {
-        ViewSegmentNumbers vs(view, segment_num);
-        symmetries_sptr->find_basic_view_segment_numbers(vs);
-        if (find(already_processed.begin(), already_processed.end(), vs) != already_processed.end())
-          continue;
 
-        already_processed.push_back(vs);
+  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
+    for (int view = start_view; view <= end_view; view++) {
+      ViewSegmentNumbers vs(view, segment_num);
+      symmetries_sptr->find_basic_view_segment_numbers(vs);
+      if (find(already_processed.begin(), already_processed.end(), vs) != already_processed.end())
+        continue;
 
-        cerr << "Processing view " << vs.view_num() << " of segment " << vs.segment_num() << " of timing position index "
-             << timing_num << endl;
+      already_processed.push_back(vs);
 
-        if (fill_with_1) {
-          RelatedViewgrams<float> viewgrams_empty =
-              proj_data_org.get_empty_related_viewgrams(vs, symmetries_sptr, false, timing_num);
-          // proj_data_org.get_empty_related_viewgrams(vs.view_num(),vs.segment_num(), symmetries_sptr);
+      cerr << "Processing view " << vs.view_num() << " of segment " << vs.segment_num() << endl;
 
-          RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams_empty.begin();
-          while (r_viewgrams_iter != viewgrams_empty.end()) {
-            Viewgram<float>& single_viewgram = *r_viewgrams_iter;
+      if (fill_with_1) {
+        RelatedViewgrams<float> viewgrams_empty = proj_data_org.get_empty_related_viewgrams(vs, symmetries_sptr);
+        // proj_data_org.get_empty_related_viewgrams(vs.view_num(),vs.segment_num(), symmetries_sptr);
+
+        RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams_empty.begin();
+        while (r_viewgrams_iter != viewgrams_empty.end()) {
+          Viewgram<float>& single_viewgram = *r_viewgrams_iter;
+          if (start_view <= single_viewgram.get_view_num() && single_viewgram.get_view_num() <= end_view &&
+              single_viewgram.get_segment_num() >= start_segment_num && single_viewgram.get_segment_num() <= end_segment_num) {
+            single_viewgram.fill(1.F);
+          }
+          r_viewgrams_iter++;
+        }
+
+        back_projector_ptr->back_project(viewgrams_empty, std::max(start_axial_pos_num, viewgrams_empty.get_min_axial_pos_num()),
+                                         std::min(end_axial_pos_num, viewgrams_empty.get_max_axial_pos_num()), start_tang_pos_num,
+                                         end_tang_pos_num);
+      } else {
+        RelatedViewgrams<float> viewgrams =
+            proj_data_org.get_related_viewgrams(vs,
+                                                // proj_data_org.get_related_viewgrams(vs.view_num(),vs.segment_num(),
+                                                symmetries_sptr);
+        RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams.begin();
+
+        while (r_viewgrams_iter != viewgrams.end()) {
+          Viewgram<float>& single_viewgram = *r_viewgrams_iter;
+          {
             if (start_view <= single_viewgram.get_view_num() && single_viewgram.get_view_num() <= end_view &&
                 single_viewgram.get_segment_num() >= start_segment_num && single_viewgram.get_segment_num() <= end_segment_num) {
-              single_viewgram.fill(1.F);
+              // ok
+            } else {
+              // set to 0 to prevent it being backprojected
+              single_viewgram.fill(0);
             }
-            r_viewgrams_iter++;
           }
+          ++r_viewgrams_iter;
+        }
 
-          back_projector_ptr->back_project(
-              viewgrams_empty, std::max(start_axial_pos_num, viewgrams_empty.get_min_axial_pos_num()),
-              std::min(end_axial_pos_num, viewgrams_empty.get_max_axial_pos_num()), start_tang_pos_num, end_tang_pos_num);
-        } else {
-          RelatedViewgrams<float> viewgrams =
-              proj_data_org.get_related_viewgrams(vs,
-                                                  // proj_data_org.get_related_viewgrams(vs.view_num(),vs.segment_num(),
-                                                  symmetries_sptr, false, timing_num);
-          RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams.begin();
+        back_projector_ptr->back_project(viewgrams, std::max(start_axial_pos_num, viewgrams.get_min_axial_pos_num()),
+                                         std::min(end_axial_pos_num, viewgrams.get_max_axial_pos_num()), start_tang_pos_num,
+                                         end_tang_pos_num);
+      } // fill
+    }   // for view_num, segment_num
 
-          while (r_viewgrams_iter != viewgrams.end()) {
-            Viewgram<float>& single_viewgram = *r_viewgrams_iter;
-            {
-              if (start_view <= single_viewgram.get_view_num() && single_viewgram.get_view_num() <= end_view &&
-                  single_viewgram.get_segment_num() >= start_segment_num &&
-                  single_viewgram.get_segment_num() <= end_segment_num) {
-                // ok
-              } else {
-                // set to 0 to prevent it being backprojected
-                single_viewgram.fill(0);
-              }
-            }
-            ++r_viewgrams_iter;
-          }
-
-          back_projector_ptr->back_project(viewgrams, std::max(start_axial_pos_num, viewgrams.get_min_axial_pos_num()),
-                                           std::min(end_axial_pos_num, viewgrams.get_max_axial_pos_num()), start_tang_pos_num,
-                                           end_tang_pos_num);
-        } // fill
-      }   // for view_num, segment_num
-  }       // for timing_pos_num
+  back_projector_ptr->get_output(image);
 }
 
 END_NAMESPACE_STIR
@@ -227,10 +216,7 @@ main(int argc, char** argv) {
   back_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(), image_sptr);
 
   do {
-    int min_timing_num = ask_num("Minimum timing position index to backproject", proj_data_info_sptr->get_min_tof_pos_num(),
-                                 proj_data_info_sptr->get_max_tof_pos_num(), proj_data_info_sptr->get_min_tof_pos_num());
-    int max_timing_num = ask_num("Maximum timing position index to backproject", min_timing_num,
-                                 proj_data_info_sptr->get_max_tof_pos_num(), min_timing_num);
+
     int min_segment_num = ask_num("Minimum segment number to backproject", proj_data_info_sptr->get_min_segment_num(),
                                   proj_data_info_sptr->get_max_segment_num(), 0);
     int max_segment_num = ask_num("Maximum segment number to backproject", min_segment_num,
@@ -283,9 +269,8 @@ main(int argc, char** argv) {
     back_projector_ptr->start_timers();
     timer.start();
 
-    do_segments(*image_sptr, *proj_data_ptr, min_timing_num, max_timing_num, min_segment_num, max_segment_num,
-                start_axial_pos_num, end_axial_pos_num, start_tang_pos_num, end_tang_pos_num, start_view, end_view,
-                back_projector_ptr.get(), fill);
+    do_segments(*image_sptr, *proj_data_ptr, min_segment_num, max_segment_num, start_axial_pos_num, end_axial_pos_num,
+                start_tang_pos_num, end_tang_pos_num, start_view, end_view, back_projector_ptr.get(), fill);
 
     timer.stop();
     cerr << timer.value() << " s total CPU time\n";

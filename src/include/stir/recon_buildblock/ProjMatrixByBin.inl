@@ -7,7 +7,6 @@
 
   \brief Implementations of inline functions for class stir::ProjMatrixByBin
 
-  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -19,15 +18,7 @@
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -69,17 +60,9 @@ ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& pro
 #endif
       cache_proj_matrix_elems_for_one_bin(probabilities);
     }
-    if (proj_data_info_sptr->is_tof_data() && this->tof_enabled) {
-      LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-      proj_data_info_sptr->get_LOR(lor, bin);
-      LORAs2Points<float> lor2(lor);
-      probabilities.set_bin(bin);
-      // now apply TOF kernel and transform to original bin
-      apply_tof_kernel_and_symm_transformation(probabilities, lor2.p1(), lor2.p2(), symm_ptr);
-    } else {
-      // now transform to original bin
-      symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
-    }
+
+    // now transform to original bin
+    symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
   } else // !cache_stores_only_basic_bins
   {
     probabilities.set_bin(bin);
@@ -99,18 +82,7 @@ ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& pro
 #endif
         cache_proj_matrix_elems_for_one_bin(probabilities);
       }
-      if (proj_data_info_sptr->is_tof_data() && this->tof_enabled) {
-        LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
-        proj_data_info_sptr->get_LOR(lor, bin);
-        LORAs2Points<float> lor2(lor);
-        probabilities.set_bin(bin);
-        // now apply TOF kernel and transform to original bin
-        apply_tof_kernel_and_symm_transformation(probabilities, lor2.p1(), lor2.p2(), symm_ptr);
-
-      } else {
-        // now transform to original bin
-        symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
-      }
+      symm_ptr->transform_proj_matrix_elems_for_one_bin(probabilities);
       cache_proj_matrix_elems_for_one_bin(probabilities);
     }
   }

@@ -4,15 +4,7 @@
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -68,8 +60,8 @@ START_NAMESPACE_STIR
 template <class Derived>
 class CListEventCylindricalScannerWithViewTangRingRingEncoding : public CListEventCylindricalScannerWithDiscreteDetectors {
 public:
-  CListEventCylindricalScannerWithViewTangRingRingEncoding(const shared_ptr<ProjDataInfo>& proj_data_info)
-      : CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info) {}
+  CListEventCylindricalScannerWithViewTangRingRingEncoding(const shared_ptr<Scanner>& scanner_sptr)
+      : CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr) {}
 
   //! This routine returns the corresponding detector pair
   inline void get_detection_position(DetectionPositionPair<>&) const;

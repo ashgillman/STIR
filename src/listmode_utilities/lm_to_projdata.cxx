@@ -16,15 +16,7 @@
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -52,16 +44,6 @@ main(int argc, char* argv[]) {
     if (strcmp(argv[1], "--input-formats") == 0) {
       cerr << endl << "Supported input file formats:\n";
       InputFileFormatRegistry<ListModeData>::default_sptr()->list_registered_names(cerr);
-      exit(EXIT_SUCCESS);
-    }
-    if (strcmp(argv[1], "--test_timing_positions") == 0) {
-      cerr << "A test function for TOF data which I could not fit anywhere else right now:\n"
-              "It is going to fill every segment with the index number of the respective TOF position \n"
-              "and then stop.\n";
-      std::cout << argc << std::endl;
-      std::cout << argv[0] << "\n" << argv[1] << "\n" << argv[2] << std::endl;
-      LmToProjData application(argc == 3 ? argv[2] : 0);
-      application.run_tof_test_function();
       exit(EXIT_SUCCESS);
     }
   }

@@ -3,15 +3,7 @@
     Copyright (C) 2014, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -141,19 +133,20 @@ send_bool_value(bool value, int tag, int destination) {
     t.start();
   }
 #endif
+}
 
-  if (destination == -1 || tag == -1)
-    MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  else
-    MPI_Send(&i, 1, MPI_INT, destination, tag, MPI_COMM_WORLD);
+if (destination == -1 || tag == -1)
+  MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
+else
+  MPI_Send(&i, 1, MPI_INT, destination, tag, MPI_COMM_WORLD);
 
 #ifdef STIR_MPI_TIMINGS
-  if (test_send_receive_times)
-    t.stop();
-  if (test_send_receive_times && t.value() > min_threshold)
-    std::cout << "Master/Slave: sending bool value took " << t.value() << " seconds" << std::endl;
+if (test_send_receive_times)
+  t.stop();
+if (test_send_receive_times && t.value() > min_threshold)
+  std::cout << "Master/Slave: sending bool value took " << t.value() << " seconds" << std::endl;
 #endif
-}
+} // namespace distributed
 
 void
 send_int_values(int* values, int count, int tag, int destination) {
@@ -391,16 +384,15 @@ send_related_viewgrams(stir::RelatedViewgrams<float>* viewgrams, int destination
 void
 send_viewgram(const stir::Viewgram<float>& viewgram, int destination) {
   // send dimensions of viewgram (axial and tangential positions and the view and segment numbers)
-  int viewgram_values[7];
+  int viewgram_values[6];
   viewgram_values[0] = viewgram.get_min_axial_pos_num();
   viewgram_values[1] = viewgram.get_max_axial_pos_num();
   viewgram_values[2] = viewgram.get_min_tangential_pos_num();
   viewgram_values[3] = viewgram.get_max_tangential_pos_num();
   viewgram_values[4] = viewgram.get_view_num();
   viewgram_values[5] = viewgram.get_segment_num();
-  viewgram_values[6] = viewgram.get_timing_pos_num();
 
-  send_int_values(viewgram_values, 7, VIEWGRAM_DIMENSIONS_TAG, destination);
+  send_int_values(viewgram_values, 6, VIEWGRAM_DIMENSIONS_TAG, destination);
 
   // allocate send-buffer
   int buffer_size = (viewgram_values[1] - viewgram_values[0] + 1) * (viewgram_values[3] - viewgram_values[2] + 1);
@@ -811,16 +803,15 @@ receive_and_construct_viewgram(stir::Viewgram<float>*& viewgram_ptr,
     t.start();
   }
 #endif
-  // receive dimension of viewgram (vlues 0-3) and view_num + segment_num (values 4-5) and timing_pos_num (value 6)
-  int viewgram_values[7];
+  // receive dimension of viewgram (vlues 0-3) and view_num + segment_num (values 4-5)
+  int viewgram_values[6];
 
-  status = receive_int_values(viewgram_values, 7, VIEWGRAM_DIMENSIONS_TAG);
+  status = receive_int_values(viewgram_values, 6, VIEWGRAM_DIMENSIONS_TAG);
 
   const int v_num = viewgram_values[4];
   const int s_num = viewgram_values[5];
-  const int t_num = viewgram_values[6];
 
-  viewgram_ptr = new stir::Viewgram<float>(proj_data_info_ptr, v_num, s_num, t_num);
+  viewgram_ptr = new stir::Viewgram<float>(proj_data_info_ptr, v_num, s_num);
 
   // allocate receive-buffer
   const int buffer_size = (viewgram_values[1] - viewgram_values[0] + 1) * (viewgram_values[3] - viewgram_values[2] + 1);

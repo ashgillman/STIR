@@ -12,24 +12,17 @@
 */
 /*
     Copyright (C) 2004- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/modulo.h"
 #include "stir/Succeeded.h"
-
+#include <algorithm>
 START_NAMESPACE_STIR
 
 /********************************************************************
@@ -60,24 +53,26 @@ LORAs2Points<coordT>::LORAs2Points(const CartesianCoordinate3D<coordT>& p1, cons
 
 template <class coordT>
 LORInAxialAndSinogramCoordinates<coordT>::LORInAxialAndSinogramCoordinates(const coordT radius)
-    : LORCylindricalCoordinates_z_and_radius<coordT>(radius), _phi(0), _s(0),
-      _swapped(false) // set _phi,_s to value to avoid assert
+    : LORCylindricalCoordinates_z_and_radius<coordT>(radius), _phi(0), _s(0) // set _phi,_s to value to avoid assert
 {
   check_state();
 }
 
 template <class coordT>
 LORInAxialAndSinogramCoordinates<coordT>::LORInAxialAndSinogramCoordinates(const coordT z1, const coordT z2, const coordT phi,
-                                                                           const coordT s, const coordT radius,
-                                                                           const bool swapped)
-    : LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius), _phi(phi), _s(s), _swapped(swapped) {
+                                                                           const coordT s, const coordT radius)
+    : LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius), _phi(to_0_2pi(phi)), _s(s) {
+  if (_phi >= _PI) {
+    _phi -= coordT(_PI);
+    _s = -_s;
+    std::swap(private_base_type::_z1, private_base_type::_z2);
+  }
   check_state();
 }
 
 template <class coordT>
 LORInAxialAndNoArcCorrSinogramCoordinates<coordT>::LORInAxialAndNoArcCorrSinogramCoordinates(const coordT radius)
-    : LORCylindricalCoordinates_z_and_radius<coordT>(radius), _phi(0), _beta(0),
-      _swapped(false) // set _phi,_beta to value to avoid assert
+    : LORCylindricalCoordinates_z_and_radius<coordT>(radius), _phi(0), _beta(0) // set _phi,_beta to value to avoid assert
 
 {
   check_state();
@@ -86,11 +81,15 @@ LORInAxialAndNoArcCorrSinogramCoordinates<coordT>::LORInAxialAndNoArcCorrSinogra
 template <class coordT>
 LORInAxialAndNoArcCorrSinogramCoordinates<coordT>::LORInAxialAndNoArcCorrSinogramCoordinates(const coordT z1, const coordT z2,
                                                                                              const coordT phi, const coordT beta,
-                                                                                             const coordT radius,
-                                                                                             const bool swapped)
-    : LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius), _phi(phi), _beta(beta), _swapped(swapped)
+                                                                                             const coordT radius)
+    : LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius), _phi(to_0_2pi(phi)), _beta(beta)
 
 {
+  if (_phi >= _PI) {
+    _phi -= coordT(_PI);
+    _beta = -_beta;
+    std::swap(private_base_type::_z1, private_base_type::_z2);
+  }
   check_state();
 }
 
@@ -124,8 +123,7 @@ LORInCylinderCoordinates<coordT>::LORInCylinderCoordinates(const LORInAxialAndSi
 
 template <class coordT>
 static inline void
-get_sino_coords(coordT& _z1, coordT& _z2, coordT& _phi, coordT& _beta, bool& _swapped,
-                const LORInCylinderCoordinates<coordT>& cyl_coords) {
+get_sino_coords(coordT& _z1, coordT& _z2, coordT& _phi, coordT& _beta, const LORInCylinderCoordinates<coordT>& cyl_coords) {
   _beta = to_0_2pi((cyl_coords.p1().psi() - cyl_coords.p2().psi() + static_cast<coordT>(_PI)) / 2);
   if (_beta > _PI)
     _beta -= static_cast<coordT>(2 * _PI);
@@ -138,18 +136,15 @@ get_sino_coords(coordT& _z1, coordT& _z2, coordT& _phi, coordT& _beta, bool& _sw
       _beta = static_cast<coordT>(_PI) - _beta;
       _z2 = cyl_coords.p1().z();
       _z1 = cyl_coords.p2().z();
-      _swapped = true;
     } else if (_beta < -static_cast<coordT>(_PI) / 2) {
       _beta = -static_cast<coordT>(_PI) - _beta;
       _z2 = cyl_coords.p1().z();
       _z1 = cyl_coords.p2().z();
-      _swapped = false;
     } else
 
     {
       _z1 = cyl_coords.p1().z();
       _z2 = cyl_coords.p2().z();
-      _swapped = false;
     }
   } else {
     _phi -= static_cast<coordT>(_PI);
@@ -158,17 +153,14 @@ get_sino_coords(coordT& _z1, coordT& _z2, coordT& _phi, coordT& _beta, bool& _sw
       _beta -= static_cast<coordT>(_PI);
       _z1 = cyl_coords.p1().z();
       _z2 = cyl_coords.p2().z();
-      _swapped = false;
     } else if (_beta < -static_cast<coordT>(_PI) / 2) {
       _beta += static_cast<coordT>(_PI);
       _z1 = cyl_coords.p1().z();
       _z2 = cyl_coords.p2().z();
-      _swapped = true;
     } else {
       _beta *= -1;
       _z2 = cyl_coords.p1().z();
       _z1 = cyl_coords.p2().z();
-      _swapped = true;
     }
   }
   assert(_phi >= 0);
@@ -186,7 +178,7 @@ LORInAxialAndNoArcCorrSinogramCoordinates<coordT>::LORInAxialAndNoArcCorrSinogra
   _phi = 0;
   _beta = 0;
 #endif
-  get_sino_coords(z1(), z2(), _phi, _beta, _swapped, cyl_coords);
+  get_sino_coords(z1(), z2(), _phi, _beta, cyl_coords);
   check_state();
 }
 
@@ -199,7 +191,7 @@ LORInAxialAndSinogramCoordinates<coordT>::LORInAxialAndSinogramCoordinates(const
   _phi = 0;
   _s = 0;
 #endif
-  get_sino_coords(z1(), z2(), _phi, beta, _swapped, cyl_coords);
+  get_sino_coords(z1(), z2(), _phi, beta, cyl_coords);
   _s = this->_radius * sin(beta);
   check_state();
 }
@@ -208,7 +200,7 @@ template <class coordT>
 LORInAxialAndSinogramCoordinates<coordT>::LORInAxialAndSinogramCoordinates(
     const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>& coords)
     : LORCylindricalCoordinates_z_and_radius<coordT>(coords.z1(), coords.z2(), coords.radius()), _phi(coords.phi()),
-      _s(coords.s()), _swapped(coords.is_swapped()) {
+      _s(coords.s()) {
   check_state();
 }
 
@@ -216,7 +208,7 @@ template <class coordT>
 LORInAxialAndNoArcCorrSinogramCoordinates<coordT>::LORInAxialAndNoArcCorrSinogramCoordinates(
     const LORInAxialAndSinogramCoordinates<coordT>& coords)
     : LORCylindricalCoordinates_z_and_radius<coordT>(coords.z1(), coords.z2(), coords.radius()), _phi(coords.phi()),
-      _beta(coords.beta()), _swapped(coords.is_swapped()) {
+      _beta(coords.beta()) {
   check_state();
 }
 
@@ -277,8 +269,8 @@ find_LOR_intersections_with_cylinder(LORAs2Points<coordT1>& intersection_coords,
     return Succeeded::no; // LOR is outside detector radius
   const coordT2 root = static_cast<coordT2>(sqrt(argsqrt));
 
-  const coordT2 l2 = static_cast<coordT2>((-(d.x() * c1.x() + d.y() * c1.y()) + root) / dxy2);
-  const coordT2 l1 = static_cast<coordT2>((-(d.x() * c1.x() + d.y() * c1.y()) - root) / dxy2);
+  const coordT2 l1 = static_cast<coordT2>((-(d.x() * c1.x() + d.y() * c1.y()) + root) / dxy2);
+  const coordT2 l2 = static_cast<coordT2>((-(d.x() * c1.x() + d.y() * c1.y()) - root) / dxy2);
   // TODO won't work when coordT1!=coordT2
   intersection_coords.p1() = d * l1 + c1;
   intersection_coords.p2() = d * l2 + c1;

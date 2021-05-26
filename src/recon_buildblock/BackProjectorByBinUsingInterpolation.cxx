@@ -6,15 +6,7 @@
     Copyright (C) 2018, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -117,6 +109,10 @@ void
 BackProjectorByBinUsingInterpolation::set_up(shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
                                              shared_ptr<const DiscretisedDensity<3, float>> const& image_info_ptr) {
   BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
+
+  if (fabs(proj_data_info_ptr->get_phi(Bin(0, 0, 0, 0))) > 1.E-4F)
+    error("BackProjectorByBinUsingInterpolation cannot handle non-zero view-offset. Sorry");
+
   this->symmetries_ptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(
       proj_data_info_ptr, image_info_ptr, do_symmetry_90degrees_min_phi, do_symmetry_180degrees_min_phi, do_symmetry_swap_segment,
       do_symmetry_swap_s, do_symmetry_shift_z));
@@ -153,11 +149,6 @@ BackProjectorByBinUsingInterpolation::set_up(shared_ptr<const ProjDataInfo> cons
 void
 BackProjectorByBinUsingInterpolation::use_exact_Jacobian(const bool use_exact_Jacobian) {
   use_exact_Jacobian_now = use_exact_Jacobian;
-}
-
-BackProjectorByBinUsingInterpolation*
-BackProjectorByBinUsingInterpolation::clone() const {
-  return new BackProjectorByBinUsingInterpolation(*this);
 }
 
 void
@@ -349,11 +340,6 @@ BackProjectorByBinUsingInterpolation::actual_back_project(DiscretisedDensity<3, 
                                   zoomed_max_tangential_pos_num);
     }
   }
-}
-
-void
-BackProjectorByBinUsingInterpolation::actual_back_project(DiscretisedDensity<3, float>&, const Bin&) {
-  error("BackProjectorByBinUsingInterpolation is not supported for list-mode reconstruction. Abort.");
 }
 
 #if 0
@@ -559,7 +545,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   Array<4, float> Proj2424(IndexRange4D(0, 1, 0, 3, 0, 1, 1, 4));
   // a variable which will be used in the loops over s to get s_in_mm
-  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(), min_axial_pos_num, pos_view.get_timing_pos_num(), 0);
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(), min_axial_pos_num, 0);
 
   // KT 20/06/2001 rewrite using get_phi
   const float cphi = cos(proj_data_info_cyl_sptr->get_phi(bin));
@@ -736,7 +722,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   Array<4, float> Proj2424(IndexRange4D(0, 1, 0, 3, 0, 1, 1, 4));
 
   // a variable which will be used in the loops over s to get s_in_mm
-  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(), min_axial_pos_num, 0, pos_view.get_timing_pos_num());
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(), min_axial_pos_num, 0);
 
   // compute cos(phi) and sin(phi)
   /* KT included special cases for phi=0 and 90 degrees to try to avoid rounding problems

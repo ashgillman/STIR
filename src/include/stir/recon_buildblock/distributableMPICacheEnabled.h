@@ -5,15 +5,7 @@
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -61,8 +53,7 @@ void distributable_computation_cache_enabled(
     const bool read_from_proj_data, int subset_num, int num_subsets, int min_segment_num, int max_segment_num,
     bool zero_seg0_end_planes, double* double_out_ptr, const shared_ptr<ProjData>& additive_binwise_correction,
     const shared_ptr<BinNormalisation> normalise_sptr, const double start_time_of_frame, const double end_time_of_frame,
-    RPC_process_related_viewgrams_type* RPC_process_related_viewgrams, DistributedCachingInformation* caching_info_ptr,
-    int min_timing_pos_num = 0, int max_timing_pos_num = 0);
+    RPC_process_related_viewgrams_type* RPC_process_related_viewgrams, DistributedCachingInformation* caching_info_ptr);
 
 void test_image_estimate(shared_ptr<stir::DiscretisedDensity<3, float>> input_image_ptr);
 //!@}

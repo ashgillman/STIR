@@ -4,15 +4,7 @@
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -76,11 +68,9 @@ TrivialDataSymmetriesForBins::get_related_bins_factorised(vector<AxTangPosNumber
 void
 TrivialDataSymmetriesForBins::get_related_bins(vector<Bin>& rel_b, const Bin& b, const int min_axial_pos_num,
                                                const int max_axial_pos_num, const int min_tangential_pos_num,
-                                               const int max_tangential_pos_num, const int min_timing_pos_num,
-                                               const int max_timing_pos_num) const {
+                                               const int max_tangential_pos_num) const {
   if (b.axial_pos_num() >= min_axial_pos_num && b.axial_pos_num() <= max_axial_pos_num &&
-      b.tangential_pos_num() >= min_tangential_pos_num && b.tangential_pos_num() <= max_tangential_pos_num &&
-      b.timing_pos_num() >= min_timing_pos_num && b.timing_pos_num() <= max_timing_pos_num) {
+      b.tangential_pos_num() >= min_tangential_pos_num && b.tangential_pos_num() <= max_tangential_pos_num) {
     rel_b.resize(1);
     rel_b[0] = b;
   } else {

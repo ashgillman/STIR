@@ -16,15 +16,7 @@
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -221,8 +213,6 @@ struct ProjDataForIntBP
 
   void actual_back_project(DiscretisedDensity<3, float>&, const RelatedViewgrams<float>&, const int min_axial_pos_num,
                            const int max_axial_pos_num, const int min_tangential_pos_num, const int max_tangential_pos_num);
-
-  void actual_back_project(DiscretisedDensity<3, float>&, const Bin&);
 
   virtual void back_project_all_symmetries(VoxelsOnCartesianGrid<float>& image, const Viewgram<float>& pos_view,
                                            const Viewgram<float>& neg_view, const Viewgram<float>& pos_plus90,

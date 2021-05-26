@@ -89,7 +89,7 @@ calc_ring1_plus_ring2(const Bin& bin, const ProjDataInfoCylindricalNoArcCorr* pr
 }
 
 static void
-set_detection_tangential_coords(shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp, const Bin& uncomp_bin,
+set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp, const Bin& uncomp_bin,
                                 DetectionPositionPair<>& detection_position_pair) {
   int det1_num = 0;
   int det2_num = 0;
@@ -207,7 +207,7 @@ BinNormalisationFromGEHDF5::BinNormalisationFromGEHDF5(const string& filename) {
 
 Succeeded
 BinNormalisationFromGEHDF5::set_up(const shared_ptr<const ExamInfo>& exam_info_sptr,
-                                   const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v) {
+                                   const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v) {
   BinNormalisation::set_up(exam_info_sptr, proj_data_info_ptr_v);
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr = dynamic_cast<const ProjDataInfoCylindricalNoArcCorr*>(proj_data_info_ptr.get());
@@ -340,7 +340,7 @@ BinNormalisationFromGEHDF5::read_norm_data(const string& filename) {
           std::vector<unsigned int> repeat_buffer;
           repeat_buffer.reserve(projInfo->get_num_axial_poss(i_seg) * count[1] - 1);
           // repeat the values
-          for (unsigned int i = 0; i < projInfo->get_num_axial_poss(i_seg); i++)
+          for (int i = 0; i < projInfo->get_num_axial_poss(i_seg); i++)
             repeat_buffer.insert(repeat_buffer.end(), buffer.begin(), buffer.end());
           // copy data back
           // AB TODO: Hardcoded magic number, remove somehow (when magic is discovered)
@@ -385,8 +385,10 @@ BinNormalisationFromGEHDF5::use_geometric_factors() const {
 }
 
 float
-BinNormalisationFromGEHDF5::get_uncalibrated_bin_efficiency(const Bin& bin, const double start_time,
-                                                            const double end_time) const {
+BinNormalisationFromGEHDF5::get_uncalibrated_bin_efficiency(const Bin& bin) const {
+
+  const float start_time = get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+  const float end_time = get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
   float total_efficiency = 0;
 
   /* TODO

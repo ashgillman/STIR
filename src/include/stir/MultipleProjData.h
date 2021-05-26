@@ -4,15 +4,7 @@
     Copyright (C) 2013, 2016-2020 University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -118,11 +110,9 @@ public:
 
   //!
   //! \brief copy_to
-  //! \return \a array_iter advanced over the number of bins (as \c std::copy)
-  //! \param full_iterator of some array
-  //! \details Copy all data to an array.
+  //! \param array_iter an iterator to an array or other object (which has to be pre-allocated)
+  //! \details Copy all data by incrementing \c array_iter.
   //! \author Nikos Efthimiou
-  //! \warning Full::iterator should be supplied.
   template <typename iterT>
   iterT copy_to(iterT array_iter) const {
     for (std::vector<shared_ptr<ProjData>>::const_iterator it = _proj_datas.begin(); it != _proj_datas.end(); ++it) {
@@ -136,10 +126,9 @@ public:
 
   //!
   //! \brief fill_from
-  //! \param full_iterator of some array
-  //! \details Fills all ProjData from a 2D array.
+  //! \param array_iter output iterator, e.g. of some array
+  //! \details Fills all ProjData from the iterator (which has to fit the size)
   //! \author Nikos Efthimiou
-  //! \warning Full::iterator should be supplied.
   template <typename iterT>
   void fill_from(iterT array_iter) {
     for (std::vector<shared_ptr<ProjData>>::iterator it = _proj_datas.begin(); it != _proj_datas.end(); ++it) {
@@ -151,10 +140,8 @@ public:
   }
 
   //!
-  //! \brief size_all
-  //! \return
+  //! \brief Returns the total number of elements in the object
   //! \author Nikos Efthimiou
-  //! \details Returns the total size of the object
   std::size_t size_all() const {
     std::size_t size = 0;
     for (std::size_t i_gate = 0; i_gate < this->get_num_gates(); i_gate++)

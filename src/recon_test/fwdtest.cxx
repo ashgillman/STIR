@@ -3,15 +3,7 @@
     Copyright (C) 2000- 2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -77,9 +69,8 @@ USING_NAMESPACE_STIR
 
 /******************* Declarations local functions *******************/
 
-static void do_segments(const VoxelsOnCartesianGrid<float>& image, ProjData& s3d, const int start_timing_pos_num,
-                        const int end_timing_pos_num, const int start_segment_num, const int end_segment_num,
-                        const int start_view, const int end_view, const int start_tangential_pos_num,
+static void do_segments(const VoxelsOnCartesianGrid<float>& image, ProjData& s3d, const int start_segment_num,
+                        const int end_segment_num, const int start_view, const int end_view, const int start_tangential_pos_num,
                         const int end_tangential_pos_num, ForwardProjectorByBin&, const bool disp);
 static void fill_cuboid(VoxelsOnCartesianGrid<float>& image);
 static void fill_cylinder(VoxelsOnCartesianGrid<float>& image);
@@ -203,9 +194,8 @@ main(int argc, char* argv[]) {
     timer.reset();
     timer.start();
 
-    do_segments(*vox_image_ptr, *proj_data_ptr, proj_data_ptr->get_min_tof_pos_num(), proj_data_ptr->get_max_tof_pos_num(),
-                proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(), proj_data_ptr->get_min_view_num(),
-                proj_data_ptr->get_max_view_num(), proj_data_ptr->get_min_tangential_pos_num(),
+    do_segments(*vox_image_ptr, *proj_data_ptr, proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(),
+                proj_data_ptr->get_min_view_num(), proj_data_ptr->get_max_view_num(), proj_data_ptr->get_min_tangential_pos_num(),
                 proj_data_ptr->get_max_tangential_pos_num(), *forw_projector_ptr, false);
 
     timer.stop();
@@ -216,21 +206,17 @@ main(int argc, char* argv[]) {
 
     // first set all data to 0
     cerr << "Filling output file with 0\n";
-    for (int timing_pos_num = proj_data_ptr->get_min_tof_pos_num(); timing_pos_num <= proj_data_ptr->get_max_tof_pos_num();
-         ++timing_pos_num)
-      for (int segment_num = proj_data_ptr->get_min_segment_num(); segment_num <= proj_data_ptr->get_max_segment_num();
-           ++segment_num) {
-        const SegmentByView<float> segment = proj_data_ptr->get_empty_segment_by_view(segment_num, false, timing_pos_num);
-        if (!(proj_data_ptr->set_segment(segment) == Succeeded::yes))
-          warning("Error set_segment %d of timing position index %d\n", segment_num, timing_pos_num);
-      }
+    for (int segment_num = proj_data_ptr->get_min_segment_num(); segment_num <= proj_data_ptr->get_max_segment_num();
+         ++segment_num) {
+      const SegmentByView<float> segment = proj_data_ptr->get_empty_segment_by_view(segment_num, false);
+      if (!(proj_data_ptr->set_segment(segment) == Succeeded::yes))
+        warning("Error set_segment %d\n", segment_num);
+    }
     do {
       CPUTimer timer;
       timer.reset();
       timer.start();
 
-      const int timing_pos_num = ask_num("Timing position index to forward project", proj_data_ptr->get_min_tof_pos_num(),
-                                         proj_data_ptr->get_max_tof_pos_num(), 0);
       const int segment_num = ask_num("Segment number to forward project (related segments will be done as well)",
                                       proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(), 0);
       const int min_view = proj_data_ptr->get_min_view_num();
@@ -247,8 +233,8 @@ main(int argc, char* argv[]) {
       const int end_tangential_pos_num =
           ask_num("End   tangential_pos_num ", start_tangential_pos_num, max_tangential_pos_num, max_tangential_pos_num);
 
-      do_segments(*vox_image_ptr, *proj_data_ptr, timing_pos_num, timing_pos_num, segment_num, segment_num, start_view, end_view,
-                  start_tangential_pos_num, end_tangential_pos_num, *forw_projector_ptr, disp);
+      do_segments(*vox_image_ptr, *proj_data_ptr, segment_num, segment_num, start_view, end_view, start_tangential_pos_num,
+                  end_tangential_pos_num, *forw_projector_ptr, disp);
 
       timer.stop();
       cerr << timer.value() << " s CPU time" << endl;
@@ -261,36 +247,34 @@ main(int argc, char* argv[]) {
 
 /******************* Implementation local functions *******************/
 void
-do_segments(const VoxelsOnCartesianGrid<float>& image, ProjData& proj_data, const int start_timing_pos_num,
-            const int end_timing_pos_num, const int start_segment_num, const int end_segment_num, const int start_view,
-            const int end_view, const int start_tangential_pos_num, const int end_tangential_pos_num,
-            ForwardProjectorByBin& forw_projector, const bool disp) {
+do_segments(const VoxelsOnCartesianGrid<float>& image, ProjData& proj_data, const int start_segment_num,
+            const int end_segment_num, const int start_view, const int end_view, const int start_tangential_pos_num,
+            const int end_tangential_pos_num, ForwardProjectorByBin& forw_projector, const bool disp) {
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector.get_symmetries_used()->clone());
 
   std::list<ViewSegmentNumbers> already_processed;
-  for (int timing_pos_num = start_timing_pos_num; timing_pos_num <= end_timing_pos_num; ++timing_pos_num) {
-    already_processed.clear();
-    for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
-      for (int view = start_view; view <= end_view; view++) {
-        ViewSegmentNumbers vs(view, segment_num);
-        symmetries_sptr->find_basic_view_segment_numbers(vs);
-        if (find(already_processed.begin(), already_processed.end(), vs) != already_processed.end())
-          continue;
 
-        already_processed.push_back(vs);
+  forw_projector.set_input(image);
 
-        cerr << "Processing view " << vs.view_num() << " of segment " << vs.segment_num() << " of timing position index "
-             << timing_pos_num << endl;
+  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
+    for (int view = start_view; view <= end_view; view++) {
+      ViewSegmentNumbers vs(view, segment_num);
+      symmetries_sptr->find_basic_view_segment_numbers(vs);
+      if (find(already_processed.begin(), already_processed.end(), vs) != already_processed.end())
+        continue;
 
-        RelatedViewgrams<float> viewgrams = proj_data.get_empty_related_viewgrams(vs, symmetries_sptr, false, timing_pos_num);
-        forw_projector.forward_project(viewgrams, viewgrams.get_min_axial_pos_num(), viewgrams.get_max_axial_pos_num(),
-                                       start_tangential_pos_num, end_tangential_pos_num);
-        if (disp)
-          display(viewgrams, viewgrams.find_max());
-        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-          error("Error set_related_viewgrams\n");
-      }
-  }
+      already_processed.push_back(vs);
+
+      cerr << "Processing view " << vs.view_num() << " of segment " << vs.segment_num() << endl;
+
+      RelatedViewgrams<float> viewgrams = proj_data.get_empty_related_viewgrams(vs, symmetries_sptr, false);
+      forw_projector.forward_project(viewgrams, viewgrams.get_min_axial_pos_num(), viewgrams.get_max_axial_pos_num(),
+                                     start_tangential_pos_num, end_tangential_pos_num);
+      if (disp)
+        display(viewgrams, viewgrams.find_max());
+      if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
+        error("Error set_related_viewgrams\n");
+    }
 }
 
 void

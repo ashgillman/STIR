@@ -3,15 +3,7 @@
   Copyright (C) 2020, University College London
   This file is part of STIR.
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2.0 of the License, or
-  (at your option) any later version.
-
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  SPDX-License-Identifier: Apache-2.0
 
   See STIR/LICENSE.txt for details
 */
@@ -332,198 +324,210 @@ main(int argc, char** argv) {
       argc -= 2;
       argv += 2;
     }
+  }
 
-    else if (strcmp(argv[0], "--add-scalar") == 0) {
-      if (argc < 2) {
-        cerr << "Option '--add-scalar' expects a (float) argument\n";
-        exit(EXIT_FAILURE);
-      }
-      add_scalar += static_cast<float>(atof(argv[1]));
-      argc -= 2;
-      argv += 2;
-    } else if (strcmp(argv[0], "--times-scalar") == 0) {
-      if (argc < 2) {
-        cerr << "Option '--times-scalar' expects a (float) argument\n";
-        exit(EXIT_FAILURE);
-      }
-      mult_scalar *= static_cast<float>(atof(argv[1]));
-      argc -= 2;
-      argv += 2;
-    } else if (strcmp(argv[0], "--divide-scalar") == 0) {
-      if (argc < 2) {
-        cerr << "Option '--divide-scalar' expects a (float) argument\n";
-        exit(EXIT_FAILURE);
-      }
-      mult_scalar /= static_cast<float>(atof(argv[1]));
-      argc -= 2;
-      argv += 2;
-    } else if (strcmp(argv[0], "--max-threshold") == 0) {
-      if (argc < 2) {
-        cerr << "Option '--max-threshold' expects a (float) argument\n";
-        exit(EXIT_FAILURE);
-      }
-      max_threshold = static_cast<float>(atof(argv[1]));
-      argc -= 2;
-      argv += 2;
-    } else if (strcmp(argv[0], "--min-threshold") == 0) {
-      if (argc < 2) {
-        cerr << "Option '--min-threshold' expects a (float) argument\n";
-        exit(EXIT_FAILURE);
-      }
-      min_threshold = static_cast<float>(atof(argv[1]));
-      argc -= 2;
-      argv += 2;
-    } else if (strcmp(argv[0], "--power") == 0) {
-      if (argc < 2) {
-        cerr << "Option '--power' expects an argument\n";
-        exit(EXIT_FAILURE);
-      }
-      power = static_cast<float>(atof(argv[1]));
-      argc -= 2;
-      argv += 2;
-    } else if (strcmp(argv[0], "--including-first") == 0) {
-      except_first = false;
-      argc -= 1;
-      argv += 1;
-    } else if (strcmp(argv[0], "--verbose") == 0) {
-      verbose = true;
-      argc -= 1;
-      argv += 1;
-    } else if (strcmp(argv[0], "-s") == 0) {
-      do_projdata = true;
-      argc -= 1;
-      argv += 1;
-    } else if (strcmp(argv[0], "--parametric") == 0) {
-      parametric = true;
-      argc -= 1;
-      argv += 1;
-    } else if (strcmp(argv[0], "--dynamic") == 0) {
-      dynamic = true;
-      argc -= 1;
-      argv += 1;
-    } else if (strcmp(argv[0], "--add") == 0) {
-      do_add = true;
-      argc -= 1;
-      argv += 1;
-    } else if (strcmp(argv[0], "--mult") == 0) {
-      do_add = false;
-      argc -= 1;
-      argv += 1;
-    } else if (strcmp(argv[0], "--accumulate") == 0) {
-      accumulate = true;
-      argc -= 1;
-      argv += 1;
-    } else {
-      cerr << "Unknown option '" << argv[0] << "'\n";
+  else if (strcmp(argv[0], "--add-scalar") == 0) {
+    if (argc < 2) {
+      cerr << "Option '--add-scalar' expects a (float) argument\n";
       exit(EXIT_FAILURE);
     }
+    add_scalar += static_cast<float>(atof(argv[1]));
+    argc -= 2;
+    argv += 2;
   }
-
-  if (argc == 0) {
-    cerr << "No output file (nor input files) on command line\n";
+  else if (strcmp(argv[0], "--times-scalar") == 0) {
+    if (argc < 2) {
+      cerr << "Option '--times-scalar' expects a (float) argument\n";
+      exit(EXIT_FAILURE);
+    }
+    mult_scalar *= static_cast<float>(atof(argv[1]));
+    argc -= 2;
+    argv += 2;
+  }
+  else if (strcmp(argv[0], "--divide-scalar") == 0) {
+    if (argc < 2) {
+      cerr << "Option '--divide-scalar' expects a (float) argument\n";
+      exit(EXIT_FAILURE);
+    }
+    mult_scalar /= static_cast<float>(atof(argv[1]));
+    argc -= 2;
+    argv += 2;
+  }
+  else if (strcmp(argv[0], "--max-threshold") == 0) {
+    if (argc < 2) {
+      cerr << "Option '--max-threshold' expects a (float) argument\n";
+      exit(EXIT_FAILURE);
+    }
+    max_threshold = static_cast<float>(atof(argv[1]));
+    argc -= 2;
+    argv += 2;
+  }
+  else if (strcmp(argv[0], "--min-threshold") == 0) {
+    if (argc < 2) {
+      cerr << "Option '--min-threshold' expects a (float) argument\n";
+      exit(EXIT_FAILURE);
+    }
+    min_threshold = static_cast<float>(atof(argv[1]));
+    argc -= 2;
+    argv += 2;
+  }
+  else if (strcmp(argv[0], "--power") == 0) {
+    if (argc < 2) {
+      cerr << "Option '--power' expects an argument\n";
+      exit(EXIT_FAILURE);
+    }
+    power = static_cast<float>(atof(argv[1]));
+    argc -= 2;
+    argv += 2;
+  }
+  else if (strcmp(argv[0], "--including-first") == 0) {
+    except_first = false;
+    argc -= 1;
+    argv += 1;
+  }
+  else if (strcmp(argv[0], "--verbose") == 0) {
+    verbose = true;
+    argc -= 1;
+    argv += 1;
+  }
+  else if (strcmp(argv[0], "-s") == 0) {
+    do_projdata = true;
+    argc -= 1;
+    argv += 1;
+  }
+  else if (strcmp(argv[0], "--parametric") == 0) {
+    parametric = true;
+    argc -= 1;
+    argv += 1;
+  }
+  else if (strcmp(argv[0], "--dynamic") == 0) {
+    dynamic = true;
+    argc -= 1;
+    argv += 1;
+  }
+  else if (strcmp(argv[0], "--add") == 0) {
+    do_add = true;
+    argc -= 1;
+    argv += 1;
+  }
+  else if (strcmp(argv[0], "--mult") == 0) {
+    do_add = false;
+    argc -= 1;
+    argv += 1;
+  }
+  else if (strcmp(argv[0], "--accumulate") == 0) {
+    accumulate = true;
+    argc -= 1;
+    argv += 1;
+  }
+  else {
+    cerr << "Unknown option '" << argv[0] << "'\n";
     exit(EXIT_FAILURE);
   }
+}
 
-  // find output filename
-  const string output_file_name = *argv;
-  if (!accumulate) {
-    --argc;
-    ++argv;
+if (argc == 0) {
+  cerr << "No output file (nor input files) on command line\n";
+  exit(EXIT_FAILURE);
+}
+
+// find output filename
+const string output_file_name = *argv;
+if (!accumulate) {
+  --argc;
+  ++argv;
+}
+
+// some basic error checking and output
+const int num_files = argc;
+
+if (num_files == 0) {
+  cerr << "No input files on command line\n";
+  exit(EXIT_FAILURE);
+}
+
+const bool no_math_on_data = power == 1 && mult_scalar == 1 && add_scalar == 0 &&
+                             min_threshold == NumericInfo<float>().min_value() &&
+                             max_threshold == NumericInfo<float>().max_value();
+
+if (verbose) {
+  cout << program_name << ": " << (do_add ? "adding " : "multiplying ") << num_files;
+  if (!no_math_on_data)
+    cout << " files after thresholding to a min value of " << min_threshold << "\n and a max value of " << max_threshold
+         << "\n and then taking a power of " << power << "\n and then multiplying with " << mult_scalar << "\n and then adding  "
+         << add_scalar << (except_first ? "\n except for" : " including") << " the first file";
+  cout << endl;
+}
+
+// construct function object that does the manipulations on each data
+pow_times_add pow_times_add_object(add_scalar, mult_scalar, power, min_threshold, max_threshold);
+
+// start the main processing
+if (!do_projdata) {
+
+  if (!parametric && !dynamic) {
+    process_data(output_file_name, num_files, argv, no_math_on_data, except_first, verbose, do_add, pow_times_add_object,
+                 *find_output_format<DiscretisedDensity<3, float>>(output_format_filename));
+  } else if (parametric) {
+    process_data(output_file_name, num_files, argv, no_math_on_data, except_first, verbose, do_add, pow_times_add_object,
+                 *find_output_format<ParametricVoxelsOnCartesianGrid>(output_format_filename));
+  } else if (dynamic) {
+    process_data(output_file_name, num_files, argv, no_math_on_data, except_first, verbose, do_add, pow_times_add_object,
+                 *find_output_format<DynamicDiscretisedDensity>(output_format_filename));
   }
+} else // do_projdata
+{
+  if (!output_format_filename.empty())
+    error("We do not support specifying the output format yet for projection data");
 
-  // some basic error checking and output
-  const int num_files = argc;
+  vector<shared_ptr<ProjData>> all_proj_data(num_files);
+  shared_ptr<ProjData> out_proj_data_ptr;
+  if (accumulate) {
+    all_proj_data[0] = ProjData::read_from_file(argv[0], std::ios::in | std::ios::out);
+    out_proj_data_ptr = all_proj_data[0];
 
-  if (num_files == 0) {
-    cerr << "No input files on command line\n";
-    exit(EXIT_FAILURE);
+    if (max_segment_num_to_process >= 0)
+      warning("Parameter max_segment_num_to_process will be ignored.");
+  } else {
+    all_proj_data[0] = ProjData::read_from_file(argv[0]);
+    shared_ptr<ProjDataInfo> output_proj_data_info_sptr((*all_proj_data[0]).get_proj_data_info_sptr()->clone());
+    if (max_segment_num_to_process >= 0) {
+      output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, max_segment_num_to_process);
+    }
+    out_proj_data_ptr.reset(
+        new ProjDataInterfile((*all_proj_data[0]).get_exam_info_sptr(), output_proj_data_info_sptr, output_file_name));
   }
-
-  const bool no_math_on_data = power == 1 && mult_scalar == 1 && add_scalar == 0 &&
-                               min_threshold == NumericInfo<float>().min_value() &&
-                               max_threshold == NumericInfo<float>().max_value();
-
-  if (verbose) {
-    cout << program_name << ": " << (do_add ? "adding " : "multiplying ") << num_files;
-    if (!no_math_on_data)
-      cout << " files after thresholding to a min value of " << min_threshold << "\n and a max value of " << max_threshold
-           << "\n and then taking a power of " << power << "\n and then multiplying with " << mult_scalar
-           << "\n and then adding  " << add_scalar << (except_first ? "\n except for" : " including") << " the first file";
-    cout << endl;
+  if (num_files > 1) {
+    // reset time-frames as we don't really know what's happening with all this
+    ExamInfo new_exam_info(out_proj_data_ptr->get_exam_info());
+    new_exam_info.set_time_frame_definitions(TimeFrameDefinitions());
+    out_proj_data_ptr->set_exam_info(new_exam_info);
   }
+  // read rest of projection data headers
+  for (int i = 1; i < num_files; ++i)
+    all_proj_data[i] = ProjData::read_from_file(argv[i]);
 
-  // construct function object that does the manipulations on each data
-  pow_times_add pow_times_add_object(add_scalar, mult_scalar, power, min_threshold, max_threshold);
-
-  // start the main processing
-  if (!do_projdata) {
-
-    if (!parametric && !dynamic) {
-      process_data(output_file_name, num_files, argv, no_math_on_data, except_first, verbose, do_add, pow_times_add_object,
-                   *find_output_format<DiscretisedDensity<3, float>>(output_format_filename));
-    } else if (parametric) {
-      process_data(output_file_name, num_files, argv, no_math_on_data, except_first, verbose, do_add, pow_times_add_object,
-                   *find_output_format<ParametricVoxelsOnCartesianGrid>(output_format_filename));
-    } else if (dynamic) {
-      process_data(output_file_name, num_files, argv, no_math_on_data, except_first, verbose, do_add, pow_times_add_object,
-                   *find_output_format<DynamicDiscretisedDensity>(output_format_filename));
+  // do reading/writing in a loop over segments
+  for (int segment_num = out_proj_data_ptr->get_min_segment_num(); segment_num <= out_proj_data_ptr->get_max_segment_num();
+       ++segment_num) {
+    if (verbose)
+      cout << "Processing segment num " << segment_num << " for all files" << endl;
+    SegmentByView<float> segment_by_view = (*all_proj_data[0]).get_segment_by_view(segment_num);
+    if (!no_math_on_data && !except_first)
+      in_place_apply_function(segment_by_view, pow_times_add_object);
+    for (int i = 1; i < num_files; ++i) {
+      SegmentByView<float> current_segment_by_view = (*all_proj_data[i]).get_segment_by_view(segment_num);
+      if (!no_math_on_data)
+        in_place_apply_function(current_segment_by_view, pow_times_add_object);
+      if (do_add)
+        segment_by_view += current_segment_by_view;
+      else
+        segment_by_view *= current_segment_by_view;
     }
-  } else // do_projdata
-  {
-    if (!output_format_filename.empty())
-      error("We do not support specifying the output format yet for projection data");
 
-    vector<shared_ptr<ProjData>> all_proj_data(num_files);
-    shared_ptr<ProjData> out_proj_data_ptr;
-    if (accumulate) {
-      all_proj_data[0] = ProjData::read_from_file(argv[0], std::ios::in | std::ios::out);
-      out_proj_data_ptr = all_proj_data[0];
-
-      if (max_segment_num_to_process >= 0)
-        warning("Parameter max_segment_num_to_process will be ignored.");
-    } else {
-      all_proj_data[0] = ProjData::read_from_file(argv[0]);
-      shared_ptr<ProjDataInfo> output_proj_data_info_sptr((*all_proj_data[0]).get_proj_data_info_sptr()->clone());
-      if (max_segment_num_to_process >= 0) {
-        output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, max_segment_num_to_process);
-      }
-      out_proj_data_ptr.reset(
-          new ProjDataInterfile((*all_proj_data[0]).get_exam_info_sptr(), output_proj_data_info_sptr, output_file_name));
-    }
-    if (num_files > 1) {
-      // reset time-frames as we don't really know what's happening with all this
-      ExamInfo new_exam_info(out_proj_data_ptr->get_exam_info());
-      new_exam_info.set_time_frame_definitions(TimeFrameDefinitions());
-      out_proj_data_ptr->set_exam_info(new_exam_info);
-    }
-    // read rest of projection data headers
-    for (int i = 1; i < num_files; ++i)
-      all_proj_data[i] = ProjData::read_from_file(argv[i]);
-
-    // do reading/writing in a loop over segments
-    for (int segment_num = out_proj_data_ptr->get_min_segment_num(); segment_num <= out_proj_data_ptr->get_max_segment_num();
-         ++segment_num) {
-      if (verbose)
-        cout << "Processing segment num " << segment_num << " for all files" << endl;
-
-      for (int k = out_proj_data_ptr->get_min_tof_pos_num(); k <= out_proj_data_ptr->get_max_tof_pos_num(); ++k) {
-        SegmentByView<float> segment_by_view = (*all_proj_data[0]).get_segment_by_view(segment_num, k);
-        if (!no_math_on_data && !except_first)
-          in_place_apply_function(segment_by_view, pow_times_add_object);
-        for (int i = 1; i < num_files; ++i) {
-          SegmentByView<float> current_segment_by_view = (*all_proj_data[i]).get_segment_by_view(segment_num, k);
-          if (!no_math_on_data)
-            in_place_apply_function(current_segment_by_view, pow_times_add_object);
-          if (do_add)
-            segment_by_view += current_segment_by_view;
-          else
-            segment_by_view *= current_segment_by_view;
-        }
-
-        if (!(out_proj_data_ptr->set_segment(segment_by_view) == Succeeded::yes))
-          warning("Error set_segment %d\n", segment_num);
-      }
-    }
+    if (!(out_proj_data_ptr->set_segment(segment_by_view) == Succeeded::yes))
+      warning("Error set_segment %d\n", segment_num);
   }
-  return EXIT_SUCCESS;
+}
+return EXIT_SUCCESS;
 }

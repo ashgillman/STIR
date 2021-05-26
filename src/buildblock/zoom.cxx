@@ -4,15 +4,7 @@
     Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -123,8 +115,8 @@ zoom_viewgrams(RelatedViewgrams<float>& in_viewgrams, const float zoom, const in
 
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(in_viewgrams.get_symmetries_ptr()->clone());
 
-  RelatedViewgrams<float> out_viewgrams = new_proj_data_info_arccorr_sptr->get_empty_related_viewgrams(
-      in_viewgrams.get_basic_view_segment_num(), symmetries_sptr, false, in_viewgrams.get_basic_timing_pos_num());
+  RelatedViewgrams<float> out_viewgrams =
+      new_proj_data_info_arccorr_sptr->get_empty_related_viewgrams(in_viewgrams.get_basic_view_segment_num(), symmetries_sptr);
 
   {
     RelatedViewgrams<float>::iterator out_iter = out_viewgrams.begin();
@@ -155,8 +147,8 @@ zoom_viewgram(Viewgram<float>& in_view, const float zoom, const int min_tang_pos
 
   new_proj_data_info_arccorr_sptr->set_tangential_sampling(new_proj_data_info_arccorr_sptr->get_tangential_sampling() / zoom);
 
-  Viewgram<float> out_view = new_proj_data_info_arccorr_sptr->get_empty_viewgram(
-      in_view.get_view_num(), in_view.get_segment_num(), false, in_view.get_timing_pos_num());
+  Viewgram<float> out_view =
+      new_proj_data_info_arccorr_sptr->get_empty_viewgram(in_view.get_view_num(), in_view.get_segment_num());
 
   zoom_viewgram(out_view, in_view, x_offset_in_mm, y_offset_in_mm);
 

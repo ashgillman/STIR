@@ -19,15 +19,7 @@
     Copyright (C) 2018, University College London
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -119,14 +111,13 @@ BackProjectorByBinUsingProjMatrixByBin::actual_back_project(DiscretisedDensity<3
       const Viewgram<float>& viewgram = *r_viewgrams_iter;
       const int view_num = viewgram.get_view_num();
       const int segment_num = viewgram.get_segment_num();
-      const int timing_num = viewgram.get_timing_pos_num();
 
       for (int tang_pos = min_tangential_pos_num; tang_pos <= max_tangential_pos_num; ++tang_pos)
         for (int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num; ++ax_pos) {
           // KT 21/02/2002 added check on 0
           if (viewgram[ax_pos][tang_pos] == 0)
             continue;
-          Bin bin(segment_num, view_num, ax_pos, tang_pos, timing_num, viewgram[ax_pos][tang_pos]);
+          Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
           proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
           proj_matrix_row.back_project(image, bin);
         }
@@ -148,8 +139,7 @@ BackProjectorByBinUsingProjMatrixByBin::actual_back_project(DiscretisedDensity<3
         if (already_processed[ax_pos][tang_pos])
           continue;
 
-        Bin basic_bin(viewgrams.get_basic_segment_num(), viewgrams.get_basic_view_num(), ax_pos, tang_pos,
-                      viewgrams.get_basic_timing_pos_num());
+        Bin basic_bin(viewgrams.get_basic_segment_num(), viewgrams.get_basic_view_num(), ax_pos, tang_pos);
         symmetries->find_basic_bin(basic_bin);
 
         proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, basic_bin);
@@ -181,7 +171,7 @@ BackProjectorByBinUsingProjMatrixByBin::actual_back_project(DiscretisedDensity<3
               continue;
             proj_matrix_row_copy = proj_matrix_row;
             Bin bin(viewgram_iter->get_segment_num(), viewgram_iter->get_view_num(), axial_pos_tmp, tang_pos_tmp,
-                    viewgram_iter->get_timing_pos_num(), (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
+                    (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
 
             unique_ptr<SymmetryOperation> symm_op_ptr = symmetries->find_symmetry_operation_from_basic_bin(bin);
             // TODO replace with Bin::compare_coordinates or so
@@ -189,7 +179,6 @@ BackProjectorByBinUsingProjMatrixByBin::actual_back_project(DiscretisedDensity<3
             assert(bin.view_num() == basic_bin.view_num());
             assert(bin.axial_pos_num() == basic_bin.axial_pos_num());
             assert(bin.tangential_pos_num() == basic_bin.tangential_pos_num());
-            assert(bin.timing_pos_num() == basic_bin.timing_pos_num());
 
             symm_op_ptr->transform_proj_matrix_elems_for_one_bin(proj_matrix_row_copy);
             proj_matrix_row_copy.back_project(image, bin);
@@ -199,31 +188,6 @@ BackProjectorByBinUsingProjMatrixByBin::actual_back_project(DiscretisedDensity<3
     assert(already_processed.sum() ==
            ((max_axial_pos_num - min_axial_pos_num + 1) * (max_tangential_pos_num - min_tangential_pos_num + 1)));
   }
-}
-
-void
-BackProjectorByBinUsingProjMatrixByBin::actual_back_project(DiscretisedDensity<3, float>& image, const Bin& bin) {
-  if (proj_matrix_ptr->is_cache_enabled() /*&& !tof_enabled*/) {
-    ProjMatrixElemsForOneBin proj_matrix_row;
-    proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
-    proj_matrix_row.back_project(image, bin);
-  } else if (proj_matrix_ptr->is_cache_enabled() /* && tof_enabled*/) {
-    tof_row->back_project(image, bin);
-  } else
-    error("BackProjectorByBinUsingProjMatrixByBin: Symmetries should be handled by ProjMatrix. Abort. ");
-}
-
-void
-BackProjectorByBinUsingProjMatrixByBin::enable_tof(ProjMatrixElemsForOneBin* for_row) {
-  tof_row = for_row;
-  //    tof_enabled = true;
-}
-
-BackProjectorByBinUsingProjMatrixByBin*
-BackProjectorByBinUsingProjMatrixByBin::clone() const {
-  BackProjectorByBinUsingProjMatrixByBin* sptr(new BackProjectorByBinUsingProjMatrixByBin(*this));
-  sptr->proj_matrix_ptr.reset(this->proj_matrix_ptr->clone());
-  return sptr;
 }
 
 END_NAMESPACE_STIR

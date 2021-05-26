@@ -6,15 +6,7 @@
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0
 
     See STIR/LICENSE.txt for details
 */
@@ -104,14 +96,14 @@ public:
   ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr, const float ring_radius, const float angular_increment,
                                    const VectorWithOffset<int>& num_axial_pos_per_segment,
                                    const VectorWithOffset<int>& min_ring_diff_v, const VectorWithOffset<int>& max_ring_diff_v,
-                                   const int num_views, const int num_tangential_poss, const int tof_mash_factor = 0);
+                                   const int num_views, const int num_tangential_poss);
 
   //! Constructor which gets \a ring_radius and \a angular_increment from the scanner
   /*! \a angular_increment is determined as Pi divided by the number of detectors in a ring.
   \todo only suitable for full-ring PET scanners*/
   ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr, const VectorWithOffset<int>& num_axial_pos_per_segment,
                                    const VectorWithOffset<int>& min_ring_diff_v, const VectorWithOffset<int>& max_ring_diff_v,
-                                   const int num_views, const int num_tangential_poss, const int tof_mash_factor = 0);
+                                   const int num_views, const int num_tangential_poss);
 
   ProjDataInfo* clone() const;
 
@@ -215,22 +207,21 @@ public:
     \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
     \obsolete
   */
-  inline Succeeded get_bin_for_det_pair(Bin&, const int det1_num, const int ring1_num, const int det2_num, const int ring2_num,
-                                        const int timing_pos_num = 0) const;
+  inline Succeeded get_bin_for_det_pair(Bin&, const int det1_num, const int ring1_num, const int det2_num,
+                                        const int ring2_num) const;
 
   //! This routine gets the detector pair corresponding to a bin.
   /*!
-  \see get_det_pair_for_view_tangential_pos_num() for
-  restrictions. In addition, this routine only works for span=1 data,
-  i.e. no axial compression.
-  \obsolete
+    \see get_det_pair_for_view_tangential_pos_num() for
+    restrictions. In addition, this routine only works for span=1 data,
+    i.e. no axial compression.
+    \obsolete
   */
+  inline void get_det_pair_for_bin(int& det1_num, int& ring1_num, int& det2_num, int& ring2_num, const Bin&) const;
 
   inline void get_det_pair_for_bin(int& det_num1, int& ring_num1, int& det_num2, int& ring_num2, const Bin& bin) const;
 
-  //@}
-
-  virtual Bin get_bin(const LOR<float>&, const double delta_time) const;
+  virtual Bin get_bin(const LOR<float>&) const;
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
@@ -242,11 +233,6 @@ public:
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
                                                                  const CartesianCoordinate3D<float>& c1,
                                                                  const CartesianCoordinate3D<float>& c2) const;
-
-  void find_cartesian_coordinates_given_scanner_coordinates_of_the_front_surface(CartesianCoordinate3D<float>& coord_1,
-                                                                                 CartesianCoordinate3D<float>& coord_2,
-                                                                                 const int Ring_A, const int Ring_B,
-                                                                                 const int det1, const int det2) const;
 
   void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1, CartesianCoordinate3D<float>& coord_2,
                                                const Bin& bin) const;
@@ -262,6 +248,9 @@ public:
 private:
   float ring_radius;
   float angular_increment;
+
+  //! get offset in psi for first detector (i.e. angle along the scanner ring)
+  float get_psi_offset() const;
 
   // used in get_view_tangential_pos_num_for_det_num_pair()
   struct Det1Det2 {

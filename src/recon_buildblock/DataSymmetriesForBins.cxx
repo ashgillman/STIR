@@ -5,15 +5,7 @@
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    SPDX-License-Identifier: Apache-2.0 AND License-ref-PARAPET-license
 
     See STIR/LICENSE.txt for details
 */
@@ -77,8 +69,7 @@ DataSymmetriesForBins::is_basic(const Bin& b) const {
 void
 DataSymmetriesForBins::get_related_bins(vector<Bin>& rel_b, const Bin& b, const int min_axial_pos_num,
                                         const int max_axial_pos_num, const int min_tangential_pos_num,
-                                        const int max_tangential_pos_num, const int min_timing_pos_num,
-                                        const int max_timing_pos_num) const {
+                                        const int max_tangential_pos_num) const {
 #ifndef NDEBUG
   Bin bin_copy = b;
   assert(!find_basic_bin(bin_copy));
@@ -109,10 +100,7 @@ DataSymmetriesForBins::get_related_bins(vector<Bin>& rel_b, const Bin& b, const 
 #endif
             vector<AxTangPosNumbers>::const_iterator ax_tang_pos_ptr = ax_tang_poss.begin();
         ax_tang_pos_ptr != ax_tang_poss.end(); ++ax_tang_pos_ptr) {
-      for (int k = min_timing_pos_num; k <= max_timing_pos_num; ++k) {
-        rel_b.push_back(
-            Bin(view_seg_ptr->segment_num(), view_seg_ptr->view_num(), (*ax_tang_pos_ptr)[1], (*ax_tang_pos_ptr)[2], k));
-      }
+      rel_b.push_back(Bin(view_seg_ptr->segment_num(), view_seg_ptr->view_num(), (*ax_tang_pos_ptr)[1], (*ax_tang_pos_ptr)[2]));
     }
   }
 }
