@@ -405,9 +405,7 @@ add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
 		viewgrams.fill(1.F);
 		// find efficiencies
 		{
-			const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
-			const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
-			this->normalisation_sptr->undo(viewgrams, start_frame, end_frame);
+			this->normalisation_sptr->undo(viewgrams);
 		}
 		// backproject
 		{

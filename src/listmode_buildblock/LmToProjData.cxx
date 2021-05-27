@@ -400,9 +400,9 @@ Succeeded LmToProjData::set_up()
       // TODO this won't work for the HiDAC or so
       // N.E: The following command used to do a dynamic cast which now I removed.
       proj_data_info_cyl_uncompressed_ptr.reset(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                                                 1, scanner_ptr->get_num_rings()-1,
-                                                 scanner_ptr->get_num_detectors_per_ring()/2,
-                                                 scanner_ptr->get_default_num_arccorrected_bins(),
+                                                 1, scanner_sptr->get_num_rings()-1,
+                                                 scanner_sptr->get_num_detectors_per_ring()/2,
+                                                 scanner_sptr->get_default_num_arccorrected_bins(),
                                                  false,
                                                  1));
       
